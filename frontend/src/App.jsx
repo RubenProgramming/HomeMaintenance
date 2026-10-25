@@ -1,0 +1,29 @@
+import { Route, Routes } from 'react-router'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import Apparaten from './pages/Apparaten'
+import ApparaatNieuw from './pages/ApparaatNieuw'
+import ApparaatDetail from './pages/ApparaatDetail'
+import Taken from './pages/Taken'
+import Inspecties from './pages/Inspecties'
+
+// De "routekaart" van de app: welke URL toont welke pagina.
+// Alle routes staan binnen <Layout>, dus de navigatie is overal zichtbaar.
+// :id is een variabel stuk van de URL, uit te lezen met useParams().
+function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/apparaten" element={<Apparaten />} />
+        <Route path="/apparaten/nieuw" element={<ApparaatNieuw />} />
+        <Route path="/apparaten/:id" element={<ApparaatDetail />} />
+        <Route path="/taken" element={<Taken />} />
+        <Route path="/inspecties" element={<Inspecties />} />
+        <Route path="*" element={<p>Pagina niet gevonden.</p>} />
+      </Route>
+    </Routes>
+  )
+}
+
+export default App
