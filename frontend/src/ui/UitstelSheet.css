@@ -1,0 +1,22 @@
+/* Uitstellen: snelkeuzes onder elkaar, met de nieuwe datum rechts.
+   Bouwt verder op .keuze uit Formulier.css, alleen groter (het zijn hier de hoofdknoppen). */
+.uitstel__uitleg { margin: var(--r-1) 0 0; color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); }
+
+.uitstel__keuzes { display: flex; flex-direction: column; gap: var(--r-2); }
+
+.uitstel__keuze {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-3);
+  height: var(--rij-hoogte);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-md);
+  text-align: left;
+}
+.uitstel__keuze:disabled { opacity: 0.5; cursor: default; }
+.uitstel__datum { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); }
+
+@media (max-width: 767px) {
+  .uitstel__keuze { height: 48px; } /* tikdoel ≥ 48px op mobiel */
+}

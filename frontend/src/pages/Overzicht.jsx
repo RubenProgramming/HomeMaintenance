@@ -1,10 +1,10 @@
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import { Link } from 'react-router'
 import { CheckCircleIcon, PuzzlePieceIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/16/solid'
 import { getAssets, getLabels, getTasks } from '../api'
 import { useApi } from '../hooks/useApi'
-import { useAfvinken } from '../hooks/useAfvinken'
+import { useTaakActies } from '../hooks/useTaakActies'
 import { datumLabel, urgentie } from '../utils/datum'
 import Kop from '../ui/Kop'
 import ApparaatTegel from '../ui/ApparaatTegel'
@@ -13,8 +13,7 @@ import GroepKop from '../ui/GroepKop'
 import StatusChips from '../ui/StatusChips'
 import { STATUS } from '../ui/status'
 import TaakRij from '../ui/TaakRij'
-import AfrondenSheet from '../ui/AfrondenSheet'
-import Melding from '../ui/Melding'
+import TaakPanelen from '../ui/TaakPanelen'
 import { LijstFout, LijstLaden } from '../ui/LijstStatus'
 import { AppContext } from '../ui/appContext'
 import '../ui/Lijst.css'
@@ -38,8 +37,7 @@ function Overzicht() {
       })),
     versie, // na toevoegen via de "+" opnieuw laden
   )
-  const { afvinken, ...melding } = useAfvinken(herlaad)
-  const [details, setDetails] = useState(null) // taak waarvan het afrond-paneel open is
+  const { acties, panelen } = useTaakActies(herlaad) // afvinken, uitstellen, bewerken, … (⋯-menu)
 
   const vandaag = VANDAAG.format(new Date())
 
@@ -69,8 +67,7 @@ function Overzicht() {
       key={`${taak._id}-${taak.nextDue}`}
       taak={taak}
       apparaat={apparaatPerId[taak.assetId]}
-      onAfvinken={afvinken}
-      onDetails={setDetails}
+      acties={acties}
       index={volgnummer++}
     />
   )
@@ -139,8 +136,7 @@ function Overzicht() {
         </div>
       )}
 
-      {details && <AfrondenSheet taak={details} onAfvinken={afvinken} onSluit={() => setDetails(null)} />}
-      <Melding {...melding} />
+      <TaakPanelen {...panelen} />
     </>
   )
 }

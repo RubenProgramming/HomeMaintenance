@@ -30,6 +30,17 @@ export function vandaagInput() {
   return new Date().toISOString().slice(0, 10)
 }
 
+// Datumveld-waarde verschuiven: verschuif("2026-01-31", { maanden: 1 }) -> "2026-02-28".
+// Rekent in UTC (net als vandaagInput), zodat zomertijd er niet tussen komt.
+// Bij maanden: bestaat de dag niet (31 feb), dan de laatste dag van die maand,
+// zoals relativedelta in de backend (helpers.bereken_volgende) ook doet.
+export function verschuif(waarde, { dagen = 0, maanden = 0 } = {}) {
+  const [jaar, maand, dag] = waarde.split('-').map(Number)
+  const laatsteDag = new Date(Date.UTC(jaar, maand - 1 + maanden + 1, 0)).getUTCDate()
+  const datum = new Date(Date.UTC(jaar, maand - 1 + maanden, Math.min(dag, laatsteDag) + dagen))
+  return datum.toISOString().slice(0, 10)
+}
+
 // Hoeveel dagen tot de datum? Negatief = te laat.
 export function dagenTot(iso) {
   if (!iso) return null

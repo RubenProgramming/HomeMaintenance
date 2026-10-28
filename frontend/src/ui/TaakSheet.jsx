@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { createTask } from '../api'
-import { vandaagInput, vanInputDatum } from '../utils/datum'
+import { createTask, updateTask } from '../api'
+import { naarInputDatum, vandaagInput, vanInputDatum } from '../utils/datum'
 import Sheet from './Sheet'
 import './Formulier.css'
 
@@ -13,9 +13,17 @@ const SNEL = [
   { label: 'Elke 2 jaar', every: 2, unit: 'years' },
 ]
 
-// Nieuwe onderhoudstaak voor een apparaat
-function TaakSheet({ apparaat, onOpgeslagen, onSluit }) {
-  const [taak, setTaak] = useState({ title: '', every: 1, unit: 'years', nextDue: vandaagInput() })
+// Onderhoudstaak toevoegen of bewerken, met hetzelfde formulier.
+// - nieuw:    <TaakSheet apparaat={apparaat} … />
+// - bewerken: <TaakSheet taak={taak} apparaat={apparaat?} … />  (apparaat alleen voor de naam erboven)
+function TaakSheet({ apparaat, taak: bestaand, onOpgeslagen, onSluit }) {
+  const bewerken = Boolean(bestaand)
+  // Het formulier werkt met tekst zoals in de velden staat ("2026-01-13"), niet met de backendvorm
+  const [taak, setTaak] = useState(
+    bewerken
+      ? { title: bestaand.title, every: bestaand.every, unit: bestaand.unit, nextDue: naarInputDatum(bestaand.nextDue) }
+      : { title: '', every: 1, unit: 'years', nextDue: vandaagInput() },
+  )
   const [bezig, setBezig] = useState(false)
   const [fout, setFout] = useState(null)
 
@@ -27,14 +35,21 @@ function TaakSheet({ apparaat, onOpgeslagen, onSluit }) {
     e.preventDefault()
     setBezig(true)
     setFout(null)
+    const velden = {
+      title: taak.title.trim(),
+      every: Number(taak.every),
+      unit: taak.unit,
+      nextDue: vanInputDatum(taak.nextDue),
+    }
     try {
-      await createTask({
-        assetId: apparaat._id,
-        title: taak.title.trim(),
-        every: Number(taak.every),
-        unit: taak.unit,
-        nextDue: vanInputDatum(taak.nextDue),
-      })
+      if (bewerken) {
+        // Alleen sturen wat echt anders is (PATCH). Niets veranderd? Dan gewoon sluiten.
+        const oud = { ...bestaand, nextDue: vanInputDatum(naarInputDatum(bestaand.nextDue)) }
+        const wijzigingen = Object.fromEntries(Object.entries(velden).filter(([veld, waarde]) => waarde !== oud[veld]))
+        if (Object.keys(wijzigingen).length > 0) await updateTask(bestaand._id, wijzigingen)
+      } else {
+        await createTask({ assetId: apparaat._id, ...velden })
+      }
       onOpgeslagen?.()
       sluit()
     } catch (err) {
@@ -45,20 +60,20 @@ function TaakSheet({ apparaat, onOpgeslagen, onSluit }) {
 
   return (
     <Sheet
-      titel="Onderhoudstaak toevoegen"
+      titel={bewerken ? 'Taak bewerken' : 'Onderhoudstaak toevoegen'}
       onSluit={onSluit}
       voet={({ sluit }) => (
         <>
           <button type="button" className="btn" onClick={sluit}>Annuleren</button>
           <button type="submit" form="taak-form" className="btn btn--primair" disabled={bezig}>
-            {bezig ? 'Opslaan…' : 'Toevoegen'}
+            {bezig ? 'Opslaan…' : bewerken ? 'Opslaan' : 'Toevoegen'}
           </button>
         </>
       )}
     >
       {({ sluit }) => (
         <form id="taak-form" className="velden" onSubmit={(e) => opslaan(e, sluit)}>
-          <p className="gedempt-tekst">{apparaat.name}</p>
+          {apparaat && <p className="gedempt-tekst">{apparaat.name}</p>}
           <label className="veld">
             <span className="veld__label">Wat moet er gebeuren?</span>
             <input className="invoer" name="title" value={taak.title} onChange={wijzig} required placeholder="Bijv. Filter vervangen" />
@@ -91,7 +106,7 @@ function TaakSheet({ apparaat, onOpgeslagen, onSluit }) {
           </div>
 
           <label className="veld">
-            <span className="veld__label">Eerste keer</span>
+            <span className="veld__label">{bewerken ? 'Volgende keer' : 'Eerste keer'}</span>
             <input className="invoer" type="date" name="nextDue" value={taak.nextDue} onChange={wijzig} required />
           </label>
 

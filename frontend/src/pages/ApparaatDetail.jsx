@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { archiveAsset, getAsset, getLabels, getLogs, getTasks, restoreAsset } from '../api'
 import { useApi } from '../hooks/useApi'
-import { useAfvinken } from '../hooks/useAfvinken'
+import { useTaakActies } from '../hooks/useTaakActies'
 import { formatDatum } from '../utils/datum'
 import { AppContext } from '../ui/appContext'
 import Kop from '../ui/Kop'
@@ -22,10 +22,9 @@ import ApparaatTegel from '../ui/ApparaatTegel'
 import { iconenPerCategorie } from '../ui/categorieIconen'
 import Popmenu from '../ui/Popmenu'
 import TaakRij from '../ui/TaakRij'
-import Melding from '../ui/Melding'
+import TaakPanelen from '../ui/TaakPanelen'
 import ApparaatSheet from '../ui/ApparaatSheet'
 import TaakSheet from '../ui/TaakSheet'
-import AfrondenSheet from '../ui/AfrondenSheet'
 import { LijstFout, LijstLaden } from '../ui/LijstStatus'
 import '../ui/Lijst.css'
 import './ApparaatDetail.css'
@@ -50,8 +49,8 @@ function ApparaatDetail() {
       ),
     `${id}-${versie}`,
   )
-  const { afvinken, ...melding } = useAfvinken(herlaad)
-  const [open, setOpen] = useState(null) // 'bewerken' | 'taak' | { afronden: taak }
+  const { acties, panelen } = useTaakActies(herlaad) // afvinken, uitstellen, bewerken, … (⋯-menu per taak)
+  const [open, setOpen] = useState(null) // 'bewerken' (apparaat) | 'taak' (nieuwe taak)
   const [actieFout, setActieFout] = useState(null)
 
   const terug = (
@@ -158,8 +157,7 @@ function ApparaatDetail() {
                     index={i}
                     opApparaat
                     uit={gearchiveerd}
-                    onAfvinken={afvinken}
-                    onDetails={(t) => setOpen({ afronden: t })}
+                    acties={acties}
                   />
                 ))}
               </div>
@@ -221,10 +219,7 @@ function ApparaatDetail() {
         <ApparaatSheet apparaat={apparaat} onOpgeslagen={herlaad} onSluit={() => setOpen(null)} />
       )}
       {open === 'taak' && <TaakSheet apparaat={apparaat} onOpgeslagen={herlaad} onSluit={() => setOpen(null)} />}
-      {open?.afronden && (
-        <AfrondenSheet taak={open.afronden} onAfvinken={afvinken} onSluit={() => setOpen(null)} />
-      )}
-      <Melding {...melding} />
+      <TaakPanelen {...panelen} />
     </>
   )
 }
