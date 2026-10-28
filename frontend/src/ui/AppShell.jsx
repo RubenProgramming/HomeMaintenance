@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
 import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   CheckCircleIcon,
+  Cog6ToothIcon,
   HomeIcon,
   PlusIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useThema } from '../hooks/useThema'
-import ThemaKnop from './ThemaKnop'
 import { ThemaContext } from './themaContext'
+import { AppContext } from './appContext'
+import RondgangSheet from './RondgangSheet'
 import './AppShell.css'
 
 const MENU = [
@@ -34,6 +36,12 @@ function leesIngeklapt() {
 function AppShell() {
   const themaState = useThema()
   const [smal, setSmal] = useState(leesIngeklapt)
+  const [versie, setVersie] = useState(0)
+  const [rondgang, setRondgang] = useState(false)
+  const app = useMemo(
+    () => ({ versie, ververs: () => setVersie((v) => v + 1), openRondgang: () => setRondgang(true) }),
+    [versie],
+  )
 
   useEffect(() => {
     try {
@@ -45,6 +53,7 @@ function AppShell() {
 
   return (
     <ThemaContext.Provider value={themaState}>
+      <AppContext.Provider value={app}>
       <div className={`shell ${smal ? 'shell--smal' : ''}`}>
         <nav className="rail" aria-label="Hoofdmenu">
           <Link to="/" className="rail__merk" aria-label="Onderhoudsplanner, naar overzicht">
@@ -52,10 +61,10 @@ function AppShell() {
             <span className="rail__tekst">Onderhoud</span>
           </Link>
 
-          <Link to="/rondgang" className="rail__item rail__item--toevoegen" data-tip="Toevoegen">
+          <button type="button" className="rail__item rail__item--toevoegen" onClick={app.openRondgang} data-tip="Toevoegen">
             <PlusIcon aria-hidden />
             <span className="rail__tekst">Toevoegen</span>
-          </Link>
+          </button>
 
           <div className="rail__menu">
             {MENU.map(({ naar, label, icoon: Icoon }) => (
@@ -68,7 +77,10 @@ function AppShell() {
           </div>
 
           <div className="rail__voet">
-            <ThemaKnop className="rail__item" metLabel={!smal} />
+            <NavLink to="/instellingen" className="rail__item" data-tip="Instellingen">
+              <Cog6ToothIcon aria-hidden />
+              <span className="rail__tekst">Instellingen</span>
+            </NavLink>
             <button
               type="button"
               className="rail__item"
@@ -89,9 +101,9 @@ function AppShell() {
         <nav className="tabbalk" aria-label="Hoofdmenu">
           {[MENU[0], MENU[1], null, MENU[2]].map((item) =>
             item === null ? (
-              <Link key="plus" to="/rondgang" className="tabbalk__plus" aria-label="Toevoegen">
+              <button key="plus" type="button" className="tabbalk__plus" onClick={app.openRondgang} aria-label="Toevoegen">
                 <PlusIcon aria-hidden />
-              </Link>
+              </button>
             ) : (
               <NavLink key={item.naar} to={item.naar} end={item.naar === '/'} className="tabbalk__item">
                 <item.icoon aria-hidden />
@@ -100,7 +112,17 @@ function AppShell() {
             ),
           )}
         </nav>
+
+        {rondgang && (
+          <RondgangSheet
+            onSluit={() => {
+              setRondgang(false)
+              app.ververs() // pagina erachter laat nieuwe apparaten zien
+            }}
+          />
+        )}
       </div>
+      </AppContext.Provider>
     </ThemaContext.Provider>
   )
 }

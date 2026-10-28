@@ -40,6 +40,41 @@ textarea.invoer { height: auto; min-height: 88px; padding: var(--r-2) var(--r-3)
 }
 .invoer-groep .invoer { padding-left: 28px; }
 
+/* Specificaties: naam | waarde | verwijderen */
+.specs { display: flex; flex-direction: column; gap: var(--r-2); }
+.specs__rij { display: grid; grid-template-columns: 1fr 1fr auto; gap: var(--r-2); align-items: center; }
+.specs__rij .invoer[readonly] { color: var(--kl-tekst-gedempt); background: transparent; }
+.specs__toevoegen { align-self: flex-start; margin-left: calc(-1 * var(--r-3)); }
+
+/* Groep velden met een kopje */
+.veldgroep { display: flex; flex-direction: column; gap: var(--r-3); margin: 0; padding: 0; border: none; }
+.veldgroep__titel {
+  padding: 0;
+  margin-bottom: var(--r-1);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-vet);
+}
+
+/* Snelkeuzes, bijv. "Elk jaar" bij een nieuwe taak */
+.keuzes { display: flex; flex-wrap: wrap; gap: var(--r-2); }
+.keuze {
+  height: 28px;
+  padding: 0 var(--r-3);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  border-radius: var(--hoek);
+  background: transparent;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  cursor: pointer;
+  transition: background var(--duur-snel), color var(--duur-snel), border-color var(--duur-snel);
+}
+.keuze:hover { color: var(--kl-tekst); background: var(--kl-vlak-hover); }
+.keuze[aria-pressed='true'] { border-color: var(--kl-accent); background: var(--kl-accent-zacht); color: var(--kl-tekst); }
+
+.interval { display: grid; grid-template-columns: 88px 1fr; gap: var(--r-2); }
+
 .afronden__taak { margin: 0; font-size: var(--tekst-lg); font-weight: var(--gewicht-vet); }
 
 .formfout {

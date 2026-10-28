@@ -156,8 +156,10 @@
     width: 48px;
     height: 40px;
     border-radius: var(--hoek);
+    border: none;
     background: var(--kl-accent);
     color: var(--kl-accent-tekst);
+    cursor: pointer;
   }
   .tabbalk__plus svg { width: 22px; height: 22px; }
   .tabbalk__plus:active { background: var(--kl-accent-hover); }

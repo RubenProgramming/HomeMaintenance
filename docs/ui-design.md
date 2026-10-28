@@ -23,13 +23,14 @@ Uitkomst van het ontwerp-interview (2026-10-28). Functies en flows komen uit
 ## Schermen
 | Scherm | Indeling |
 |---|---|
-| Navigatie | Desktop: **inklapbare iconenbalk** links, onderin Toevoegen + themaschakelaar. Mobiel: onderbalk met centrale "+", themaschakelaar rechtsboven in de paginakop. |
+| Navigatie | Desktop: **inklapbare iconenbalk** links, bovenin Toevoegen, onderin Instellingen. Mobiel: onderbalk met centrale "+", tandwiel rechtsboven in de paginakop. |
 | Overzicht | Geen tegels. Eén samenvattingsregel, dan takenrijen gegroepeerd: Te laat / Deze week / Deze maand. Daaronder klein: Onvolledig. |
 | Taakrij | Leeg rondje vooraan = afvinken (met undo-toast). Tik op de rij = apparaat openen. `⋯`-menu: afronden met details. Datum rechts. |
 | Apparaten | Rijen gegroepeerd per ruimte, live zoeken bovenaan. Per rij: naam, merk/model, rechts eerstvolgende taak of "onvolledig". |
 | Apparaatpagina | Eén kolom: Taken → Logboek → Gegevens → Bestanden. Desktop: gegevens in smalle rechterkolom. |
 | Formulieren | Desktop: paneel dat van rechts inschuift. Mobiel: sheet van onderen. |
 | Rondgang | Ook een sheet; op mobiel bijna schermvullend met de ruimte bovenin. |
+| Instellingen | Tandwiel onderin de iconenbalk, op mobiel rechtsboven in de kop. Bevat thema (Systeem/Licht/Donker), ruimtes en categorieën. Hernoemen past apparaten mee aan (zelfde naam = samenvoegen); verwijderen verplaatst eerst de apparaten (bij categorie mag "geen categorie"). |
 | "Binnenkort" | Blijft zichtbaar, ingetogen en uitgeschakeld met klein label. |
 
 ## Aanpak

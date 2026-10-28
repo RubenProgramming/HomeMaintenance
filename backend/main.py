@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from routers import assets, logs, tasks
+from routers import assets, logs, tasks, labels
 from setup_db import init_db
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,3 +28,5 @@ def root():
 app.include_router(assets.router)
 app.include_router(tasks.router)
 app.include_router(logs.router)
+app.include_router(labels.rooms_router)
+app.include_router(labels.categories_router)

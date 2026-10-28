@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 // De keuze staat in localStorage en wordt als data-theme op <html> gezet;
 // tokens.css doet de rest. index.html zet hem al vóór React start, tegen flitsen.
 const SLEUTEL = 'thema'
-export const VOLGORDE = ['systeem', 'licht', 'donker']
+const KEUZES = ['systeem', 'licht', 'donker']
 
 function leesKeuze() {
   try {
     const waarde = localStorage.getItem(SLEUTEL)
-    return VOLGORDE.includes(waarde) ? waarde : 'systeem'
+    return KEUZES.includes(waarde) ? waarde : 'systeem'
   } catch {
     return 'systeem' // bijv. privévenster waarin localStorage niet mag
   }
@@ -33,10 +33,5 @@ export function useThema() {
     }
   }, [thema])
 
-  // Systeem → Licht → Donker → Systeem
-  function volgende() {
-    setThema((huidig) => VOLGORDE[(VOLGORDE.indexOf(huidig) + 1) % VOLGORDE.length])
-  }
-
-  return { thema, volgende }
+  return { thema, setThema }
 }

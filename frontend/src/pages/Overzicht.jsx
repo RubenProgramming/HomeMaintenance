@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Link } from 'react-router'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/16/solid'
@@ -10,6 +10,8 @@ import Kop from '../ui/Kop'
 import TaakRij from '../ui/TaakRij'
 import AfrondenSheet from '../ui/AfrondenSheet'
 import Melding from '../ui/Melding'
+import { LijstFout, LijstLaden } from '../ui/LijstStatus'
+import { AppContext } from '../ui/appContext'
 import '../ui/Lijst.css'
 import './Overzicht.css'
 
@@ -24,16 +26,19 @@ const VANDAAG = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeri
 // Het eerste scherm. Je opent de app alleen als er iets moet, dus:
 // bovenaan meteen wat er nu moet, gegroepeerd op urgentie. Geen tegels of grafieken.
 function Overzicht() {
-  const { data, laden, fout, herlaad } = useApi(() =>
-    Promise.all([getAssets(), getTasks()]).then(([apparaten, taken]) => ({ apparaten, taken })),
+  const { versie } = useContext(AppContext)
+  const { data, laden, fout, herlaad } = useApi(
+    () => Promise.all([getAssets(), getTasks()]).then(([apparaten, taken]) => ({ apparaten, taken })),
+    versie, // na toevoegen via de "+" opnieuw laden
   )
   const { afvinken, ...melding } = useAfvinken(herlaad)
   const [details, setDetails] = useState(null) // taak waarvan het afrond-paneel open is
 
   const vandaag = VANDAAG.format(new Date())
 
-  if (laden && !data) return <OverzichtLaden vandaag={vandaag} />
-  if (fout) return <OverzichtFout melding={fout} opnieuw={herlaad} />
+  const kop = <Kop titel="Overzicht" onder={<span className="eerste-hoofdletter">{vandaag}</span>} />
+  if (laden && !data) return <>{kop}<LijstLaden /></>
+  if (fout) return <>{kop}<LijstFout melding={fout} opnieuw={herlaad} /></>
 
   const { apparaten, taken } = data
   const apparaatPerId = Object.fromEntries(apparaten.map((a) => [a._id, a]))
@@ -64,7 +69,7 @@ function Overzicht() {
 
   return (
     <>
-      <Kop titel="Overzicht" onder={<span className="eerste-hoofdletter">{vandaag}</span>} />
+      {kop}
 
       <Samenvatting perGroep={perGroep} volgende={later[0]} />
 
@@ -165,40 +170,6 @@ function Samenvatting({ perGroep, volgende }) {
         </span>
       ))}
     </p>
-  )
-}
-
-function OverzichtLaden({ vandaag }) {
-  return (
-    <>
-      <Kop titel="Overzicht" onder={<span className="eerste-hoofdletter">{vandaag}</span>} />
-      <div className="skelet" style={{ width: 220, height: 16, marginBottom: 20 }} />
-      <div className="lijst" aria-busy="true" aria-label="Laden">
-        {[70, 55, 62, 48].map((breedte, i) => (
-          <div key={i} className="rij">
-            <div className="skelet" style={{ width: 18, height: 18, borderRadius: '50%' }} />
-            <div className="skelet" style={{ width: `${breedte}%`, height: 12 }} />
-          </div>
-        ))}
-      </div>
-    </>
-  )
-}
-
-function OverzichtFout({ melding, opnieuw }) {
-  return (
-    <>
-      <Kop titel="Overzicht" />
-      <div className="lijst lijst-leeg">
-        <strong>Kan de gegevens niet laden</strong>
-        <span>{melding}. Draait de backend? (docker compose up -d)</span>
-        <div>
-          <button type="button" className="btn" onClick={opnieuw} style={{ marginTop: 16 }}>
-            Opnieuw proberen
-          </button>
-        </div>
-      </div>
-    </>
   )
 }
 

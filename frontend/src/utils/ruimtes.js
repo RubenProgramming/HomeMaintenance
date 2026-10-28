@@ -1,33 +1,17 @@
-// De ruimtes in huis. "location" is in de backend gewoon tekst; hier maken we er
-// een vaste lijst van, aangevuld met elke ruimte die je zelf al eens gebruikt hebt.
-// Een nieuwe ruimte "bestaat" dus zodra er een apparaat in staat.
+// Ruimtes: de lijst staat in de backend (GET /rooms) en beheer je via Instellingen.
+// Een apparaat verwijst naar zijn ruimte met de naam (asset.location).
 
-export const STANDAARD_RUIMTES = [
-  'Keuken',
-  'Woonkamer',
-  'Badkamer',
-  'Toilet',
-  'Slaapkamer',
-  'Hal',
-  'Zolder',
-  'Kelder',
-  'Berging',
-  'Meterkast',
-  'Tuin',
-  'Dak & gevel',
-]
-
-// Standaardlijst + eigen ruimtes uit bestaande apparaten, zonder dubbele
-// (hoofdletterongevoelig: "keuken" en "Keuken" zijn dezelfde ruimte).
-export function alleRuimtes(apparaten = []) {
-  const gezien = new Map(STANDAARD_RUIMTES.map((r) => [r.toLowerCase(), r]))
+// Namen in de volgorde van de lijst, plus eventuele ruimtes die apparaten gebruiken
+// maar (nog) niet in de lijst staan, zodat er nooit een apparaat "zoekraakt".
+export function ruimteNamen(ruimtes = [], apparaten = []) {
+  const namen = ruimtes.map((r) => r.name)
   for (const a of apparaten) {
-    const naam = a.location?.trim()
-    if (naam && !gezien.has(naam.toLowerCase())) gezien.set(naam.toLowerCase(), naam)
+    if (a.location && !namen.some((n) => zelfdeRuimte(n, a.location))) namen.push(a.location)
   }
-  return [...gezien.values()]
+  return namen
 }
 
+// Hoofdletterongevoelig, net als in de backend: "keuken" en "Keuken" zijn dezelfde ruimte
 export function zelfdeRuimte(a, b) {
   return a?.trim().toLowerCase() === b?.trim().toLowerCase()
 }

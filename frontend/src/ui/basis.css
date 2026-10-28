@@ -1,7 +1,7 @@
 /* ============================================================
    Basis: lettertype, achtergrond, knoppen en kleine hulpklassen.
-   Klassenamen in BEM-stijl (blok__element--variant), zodat ze niet
-   botsen met de oude index.css zolang die er nog is.
+   Klassenamen in BEM-stijl: blok__element--variant
+   (bijv. .rij__titel, .btn--primair). Elk component heeft een eigen .css.
    ============================================================ */
 html {
   font-family: var(--font);
@@ -11,6 +11,12 @@ html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
 }
+
+*, *::before, *::after { box-sizing: border-box; }
+h1, h2, h3, p { margin: 0; }
+a { color: var(--kl-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font: inherit; }
 
 body {
   margin: 0;
@@ -59,6 +65,9 @@ body {
 
 .btn--primair { background: var(--kl-accent); border-color: var(--kl-accent); color: var(--kl-accent-tekst); }
 .btn--primair:hover:not(:disabled) { background: var(--kl-accent-hover); border-color: var(--kl-accent-hover); }
+
+.btn--gevaar { background: var(--kl-rood); border-color: var(--kl-rood); color: #fff; }
+.btn--gevaar:hover:not(:disabled) { background: var(--kl-rood); filter: brightness(1.1); }
 
 .btn--stil { border-color: transparent; color: var(--kl-tekst-gedempt); }
 .btn--stil:hover:not(:disabled) { color: var(--kl-tekst); }
@@ -115,6 +124,11 @@ body {
   animation: skelet-puls 1.4s ease-in-out infinite;
 }
 @keyframes skelet-puls { 50% { opacity: 0.5; } }
+
+/* Alleen op brede schermen (op mobiel doet de tabbalk of een menu het al) */
+@media (max-width: 767px) {
+  .alleen-breed { display: none !important; }
+}
 
 /* Iemand die "minder beweging" heeft ingesteld krijgt geen animaties */
 @media (prefers-reduced-motion: reduce) {

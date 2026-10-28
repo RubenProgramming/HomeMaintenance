@@ -139,8 +139,9 @@
   transform: scale(0);
   transition: transform var(--duur-traag) cubic-bezier(0.34, 1.56, 0.64, 1); /* klein veertje */
 }
-.vinkje:hover .vinkje__rondje { border-color: var(--kl-accent); }
-.vinkje:hover .vinkje__rondje svg { transform: scale(0.7); color: var(--kl-accent); }
+.vinkje:disabled { cursor: default; opacity: 0.4; }
+.vinkje:hover:not(:disabled) .vinkje__rondje { border-color: var(--kl-accent); }
+.vinkje:hover:not(:disabled) .vinkje__rondje svg { transform: scale(0.7); color: var(--kl-accent); }
 .vinkje--aan .vinkje__rondje { background: var(--kl-accent); border-color: var(--kl-accent); transform: scale(1.1); }
 .vinkje--aan .vinkje__rondje svg,
 .vinkje--aan:hover .vinkje__rondje svg { transform: scale(1); color: var(--kl-accent-tekst); }
@@ -152,6 +153,7 @@
   color: var(--kl-tekst-gedempt);
 }
 .lijst-leeg strong { display: block; color: var(--kl-tekst); font-weight: var(--gewicht-medium); }
+.lijst-leeg__knop { margin-top: var(--r-4); }
 
 /* ---------- Mobiel: twee regels per rij, grotere tikdoelen ---------- */
 @media (max-width: 767px) {

@@ -1,16 +1,17 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import { TOAST_DUUR } from '../hooks/useAfvinken'
+import { MELDING_DUUR } from '../hooks/useMelding'
 import './Melding.css'
 
 // Korte melding onderin ("Afgerond: Ontkalken — Ongedaan maken").
-// Werkt samen met useAfvinken: geef melding, ongedaan en sluit door.
+// Werkt samen met useMelding / useAfvinken: geef melding, ongedaan en sluit door.
+// "Ongedaan maken" verschijnt alleen als de melding een logId heeft en er een ongedaan is.
 // Het streepje onderin loopt leeg in de tijd dat je nog kunt terugdraaien.
 function Melding({ melding, ongedaan, sluit }) {
   if (!melding) return null
   return (
     <div key={melding.id} className={`melding ${melding.fout ? 'melding--fout' : ''}`} role="status">
       <span className="melding__tekst">{melding.tekst}</span>
-      {melding.logId && (
+      {melding.logId && ongedaan && (
         <button type="button" className="melding__actie" onClick={ongedaan}>
           Ongedaan maken
         </button>
@@ -18,7 +19,7 @@ function Melding({ melding, ongedaan, sluit }) {
       <button type="button" className="melding__sluit" onClick={sluit} aria-label="Sluiten">
         <XMarkIcon aria-hidden />
       </button>
-      <span className="melding__tijd" style={{ animationDuration: `${TOAST_DUUR}ms` }} aria-hidden />
+      <span className="melding__tijd" style={{ animationDuration: `${MELDING_DUUR}ms` }} aria-hidden />
     </div>
   )
 }

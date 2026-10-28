@@ -18,10 +18,10 @@
   font-size: var(--tekst-sm);
 }
 .kop__acties { display: flex; align-items: center; gap: var(--r-2); flex: none; }
-.kop__thema { display: none; }
+.kop__instellingen { display: none; }
 
 @media (max-width: 767px) {
   .kop { margin-bottom: var(--r-5); }
   .kop__titel { font-size: var(--tekst-2xl); }
-  .kop__thema { display: inline-flex; }
+  .kop__instellingen { display: inline-flex; }
 }

@@ -27,12 +27,14 @@ De frontend praat met de backend via `/api/...`; Vite stuurt dat door naar poort
 ```
 frontend/src/
   api.js              alle backend-aanroepen (1 functie per endpoint)
-  hooks/useApi.js     data ophalen met laden/fout/herladen
-  utils/              datums en specs omzetten
-  components/         herbruikbare stukjes (TaskCard, SpecsEditor, ...)
+  hooks/              useApi (laden/fout/herladen), useAfvinken (vinkje + undo), useThema
+  utils/              datums, specs en ruimtes omzetten
+  ui/                 bouwstenen met eigen .css: AppShell, TaakRij, Sheet, Melding, ...
+  ui/tokens.css       alle kleuren, maten en tijden (donker + licht)
   pages/              één bestand per scherm
 ```
-Knoppen met het label "binnenkort" (`NogNietKlaar`) wachten nog op backend-functionaliteit.
+Ontwerpkeuzes staan in `docs/ui-design.md`. Onderdelen met het label "Binnenkort"
+wachten nog op backend-functionaliteit (zoek in de code op `binnenkort`).
 
 
 ## Database bekijken

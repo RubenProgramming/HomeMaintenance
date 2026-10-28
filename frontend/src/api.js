@@ -69,3 +69,19 @@ export const getLogs = (assetId) => verzoek(`/assets/${assetId}/logs`)
 
 // Afronden ongedaan maken: verwijdert de logregel en zet nextDue van de taak terug
 export const undoLog = (logId) => verzoek(`/logs/${logId}`, { methode: 'DELETE' })
+
+// ---------- Ruimtes en categorieën (routers/labels.py) ----------
+// soort: 'rooms' of 'categories'. Allebei dezelfde endpoints.
+
+export const getLabels = (soort) => verzoek(`/${soort}`)
+
+export const createLabel = (soort, naam) =>
+  verzoek(`/${soort}`, { methode: 'POST', body: { name: naam } })
+
+// Hernoemen past ook de apparaten aan; een bestaande naam = samenvoegen
+export const renameLabel = (soort, id, naam) =>
+  verzoek(`/${soort}/${id}`, { methode: 'PATCH', body: { name: naam } })
+
+// naarId: waar de apparaten heen gaan (bij categorieën mag het leeg: dan geen categorie)
+export const deleteLabel = (soort, id, naarId = null) =>
+  verzoek(`/${soort}/${id}${naarId ? `?moveTo=${naarId}` : ''}`, { methode: 'DELETE' })

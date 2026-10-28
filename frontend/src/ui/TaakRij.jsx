@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowTopRightOnSquareIcon, CheckIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
+import { ArrowTopRightOnSquareIcon, CheckCircleIcon, CheckIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
 import { datumLabel, formatDatum, interval, urgentie } from '../utils/datum'
 import Popmenu from './Popmenu'
 import './Lijst.css'
@@ -19,7 +19,9 @@ function minderBeweging() {
 // - ⋯-menu: afronden met details, of naar het apparaat
 //
 // Props: taak, apparaat?, onAfvinken(taak) → Promise<boolean>, onDetails(taak), index (voor de inloop-animatie)
-function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0 }) {
+// opApparaat: de rij staat op de pagina van het apparaat zelf (geen link, geen "Naar apparaat")
+// uit: archief, alleen tonen (geen vinkje of menu)
+function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat = false, uit = false }) {
   const [fase, setFase] = useState('rust') // rust → aan → weg
   const navigate = useNavigate()
   const niveau = urgentie(taak.nextDue)
@@ -47,6 +49,7 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0 }) {
         <div className="rij taakrij">
           <button
             type="button"
+            disabled={uit}
             className={`vinkje ${fase !== 'rust' ? 'vinkje--aan' : ''}`}
             onClick={vink}
             aria-label={`${taak.title} afronden`}
@@ -58,9 +61,13 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0 }) {
           </button>
 
           <div className="rij__hoofd">
-            <Link to={naarApparaat} className="rij__titel rij__link">
-              {taak.title}
-            </Link>
+            {opApparaat ? (
+              <span className="rij__titel">{taak.title}</span>
+            ) : (
+              <Link to={naarApparaat} className="rij__titel rij__link">
+                {taak.title}
+              </Link>
+            )}
             {meta.length > 0 && <span className="rij__meta">{meta.join(' · ')}</span>}
           </div>
 
@@ -68,13 +75,17 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0 }) {
             {datumLabel(taak.nextDue)}
           </span>
 
-          <Popmenu
-            label={`Meer acties voor ${taak.title}`}
-            items={[
-              { label: 'Afronden met details…', icoon: PencilSquareIcon, onKies: () => onDetails(taak) },
-              { label: 'Naar apparaat', icoon: ArrowTopRightOnSquareIcon, onKies: () => navigate(naarApparaat) },
-            ]}
-          />
+          {!uit && (
+            <Popmenu
+              label={`Meer acties voor ${taak.title}`}
+              items={[
+                { label: 'Afronden met details…', icoon: CheckCircleIcon, onKies: () => onDetails(taak) },
+                opApparaat
+                  ? { label: 'Taak bewerken', icoon: PencilSquareIcon, binnenkort: true }
+                  : { label: 'Naar apparaat', icoon: ArrowTopRightOnSquareIcon, onKies: () => navigate(naarApparaat) },
+              ]}
+            />
+          )}
         </div>
       </div>
     </div>

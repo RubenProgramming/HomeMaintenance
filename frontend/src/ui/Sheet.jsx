@@ -10,8 +10,9 @@ const SLUIT_DUUR = 200 // ms, gelijk aan de uit-animatie in Sheet.css
 // - titel, onSluit: verplicht
 // - vol: op mobiel bijna schermvullend (voor langere sessies, zoals de rondgang)
 // - voet: knoppen onderin (blijven staan als de inhoud scrolt)
+// - focusVeld: eerste veld focussen bij openen (uit als er eerst iets te kiezen is)
 // - children: inhoud, of een functie ({ sluit }) => inhoud, om na opslaan netjes te sluiten
-function Sheet({ titel, onSluit, vol = false, voet, children }) {
+function Sheet({ titel, onSluit, vol = false, focusVeld = true, voet, children }) {
   const [sluitend, setSluitend] = useState(false)
   const paneel = useRef(null)
 
@@ -34,12 +35,13 @@ function Sheet({ titel, onSluit, vol = false, voet, children }) {
     const vorige = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     // Focus naar het eerste veld (of het paneel zelf)
-    const eerste = paneel.current?.querySelector('input, select, textarea')
+    const eerste = focusVeld ? paneel.current?.querySelector('input, select, textarea') : null
     ;(eerste ?? paneel.current)?.focus()
     return () => {
       document.removeEventListener('keydown', toets)
       document.body.style.overflow = vorige
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij openen
   }, [])
 
   return createPortal(

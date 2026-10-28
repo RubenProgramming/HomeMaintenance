@@ -83,3 +83,17 @@ class LogCreate(BaseModel):
     cost: int | None = Field(default=None, ge=0)
     notes: str | None = None
     attachments: list[str] = []
+
+
+# RUIMTES EN CATEGORIEËN (zelfde vorm, zie routers/labels.py)
+
+class Label(BaseModel):
+    id: pyObjectId = Field(alias="_id")
+    name: str
+    order: int
+    assetCount: int = 0   # actieve apparaten (wat je in de app ziet)
+    totalCount: int = 0   # inclusief gearchiveerd (die verhuizen ook mee)
+
+class LabelWrite(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    name: str = Field(min_length=1, max_length=60)

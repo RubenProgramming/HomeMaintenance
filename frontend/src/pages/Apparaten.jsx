@@ -1,119 +1,159 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
-import { getAssets, getTasks } from '../api'
+import { useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router'
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { getAssets, getLabels, getTasks } from '../api'
 import { useApi } from '../hooks/useApi'
-import { formatDatum, relatief, urgentie } from '../utils/datum'
-import { Fout, Laden, Leeg } from '../components/Status'
+import { datumLabel, urgentie } from '../utils/datum'
+import { ruimteNamen, zelfdeRuimte } from '../utils/ruimtes'
+import { AppContext } from '../ui/appContext'
+import Kop from '../ui/Kop'
+import ApparaatSheet from '../ui/ApparaatSheet'
+import { LijstFout, LijstLaden } from '../ui/LijstStatus'
+import '../ui/Formulier.css'
+import '../ui/Lijst.css'
+import './Apparaten.css'
 
-function Apparaten() {
+// Alle apparaten, gegroepeerd per ruimte (zo loop je ook door je huis).
+// Zoeken filtert live op naam, merk, model en categorie.
+// nieuw: op /apparaten/nieuw staat het formulier meteen open
+function Apparaten({ nieuw = false }) {
+  const navigate = useNavigate()
+  const { versie } = useContext(AppContext)
   const [zoek, setZoek] = useState('')
-  const [categorie, setCategorie] = useState('')
-  const [toonArchief, setToonArchief] = useState(false)
+  const [archief, setArchief] = useState(false)
+  const [formulier, setFormulier] = useState(nieuw)
 
-  // toonArchief is de "sleutel": als je het vinkje aanzet, wordt opnieuw geladen
+  // archief en versie zijn de "sleutel": verandert er een, dan wordt opnieuw geladen
   const { data, laden, fout, herlaad } = useApi(
-    () => Promise.all([getAssets(toonArchief), getTasks()]).then(([apparaten, taken]) => ({ apparaten, taken })),
-    toonArchief,
+    () =>
+      Promise.all([getAssets(archief), getTasks(), getLabels('rooms')]).then(([apparaten, taken, ruimtes]) => ({
+        apparaten,
+        taken,
+        ruimtes,
+      })),
+    `${archief}-${versie}`,
   )
 
-  if (laden && !data) return <Laden />
-  if (fout) return <Fout melding={fout} opnieuw={herlaad} />
+  const kop = (
+    <Kop titel="Apparaten" onder={data && `${data.apparaten.filter((a) => !a.archivedAt).length} apparaten`}>
+      <button type="button" className="btn btn--primair alleen-breed" onClick={() => setFormulier(true)}>
+        <PlusIcon aria-hidden />
+        Apparaat
+      </button>
+    </Kop>
+  )
 
-  const { apparaten, taken } = data
+  const sheet = formulier && (
+    <ApparaatSheet
+      onOpgeslagen={(a) => navigate(`/apparaten/${a._id}`)}
+      onSluit={() => {
+        setFormulier(false)
+        if (nieuw) navigate('/apparaten', { replace: true })
+      }}
+    />
+  )
 
-  // Per apparaat: de eerstvolgende taak (taken zijn een aparte collectie,
-  // die koppelen we hier via assetId — net als een foreign key in SQL)
-  const volgendeTaak = {}
+  if (laden && !data) return <>{kop}<LijstLaden />{sheet}</>
+  if (fout) return <>{kop}<LijstFout melding={fout} opnieuw={herlaad} /></>
+
+  const { apparaten, taken, ruimtes } = data
+
+  // Per apparaat de eerstvolgende taak (taken zijn een aparte collectie, gekoppeld via assetId)
+  const volgende = {}
   for (const taak of taken) {
-    const huidig = volgendeTaak[taak.assetId]
-    if (!huidig || new Date(taak.nextDue) < new Date(huidig.nextDue)) {
-      volgendeTaak[taak.assetId] = taak
-    }
+    const huidig = volgende[taak.assetId]
+    if (!huidig || new Date(taak.nextDue) < new Date(huidig.nextDue)) volgende[taak.assetId] = taak
   }
 
-  const categorieen = [...new Set(apparaten.map((a) => a.category).filter(Boolean))].sort()
-
-  // Filteren gebeurt hier in de browser. Bij duizenden apparaten zou je dit
-  // naar de backend verplaatsen (een query met $regex of een text index).
-  const tekst = zoek.toLowerCase()
-  const gefilterd = apparaten.filter(
-    (a) =>
-      (!categorie || a.category === categorie) &&
-      [a.name, a.location, a.brand, a.model].some((v) => v?.toLowerCase().includes(tekst)),
+  // Filteren in de browser; bij duizenden apparaten zou dit naar de backend gaan
+  const tekst = zoek.trim().toLowerCase()
+  const gefilterd = apparaten.filter((a) =>
+    [a.name, a.brand, a.model, a.category, a.location].some((v) => v?.toLowerCase().includes(tekst)),
   )
+
+  // Groepen in de volgorde van de ruimtelijst (Instellingen); lege ruimtes vallen weg
+  const groepen = ruimteNamen(ruimtes, apparaten)
+    .map((ruimte) => ({ ruimte, items: gefilterd.filter((a) => zelfdeRuimte(a.location, ruimte)) }))
+    .filter((g) => g.items.length > 0)
+
+  let volgnummer = 0
 
   return (
     <>
-      <header className="paginakop">
-        <h1>Apparaten</h1>
-        <div className="knoppenrij">
-          <Link to="/apparaten/nieuw" className="knop alleen-desktop">Uitgebreid formulier</Link>
-          <Link to="/rondgang" className="knop primair alleen-desktop">+ Apparaten toevoegen</Link>
-        </div>
-      </header>
+      {kop}
 
-      <div className="filterbalk">
-        <input
-          type="search"
-          placeholder="Zoek op naam, locatie, merk…"
-          value={zoek}
-          onChange={(e) => setZoek(e.target.value)}
-        />
-        <select value={categorie} onChange={(e) => setCategorie(e.target.value)}>
-          <option value="">Alle categorieën</option>
-          {categorieen.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
-        <label className="vinkje">
-          <input type="checkbox" checked={toonArchief} onChange={(e) => setToonArchief(e.target.checked)} />
-          Toon gearchiveerd
+      <div className="werkbalk">
+        <label className="zoekveld">
+          <MagnifyingGlassIcon aria-hidden />
+          <input
+            type="search"
+            className="invoer"
+            placeholder="Zoeken"
+            value={zoek}
+            onChange={(e) => setZoek(e.target.value)}
+            aria-label="Zoeken"
+          />
         </label>
+        <button type="button" className="keuze" aria-pressed={archief} onClick={() => setArchief(!archief)}>
+          Archief
+        </button>
       </div>
 
-      {gefilterd.length === 0 ? (
-        <Leeg>Geen apparaten gevonden.</Leeg>
+      {groepen.length === 0 ? (
+        <div className="lijst lijst-leeg">
+          {tekst ? (
+            <>
+              <strong>Niets gevonden voor “{zoek.trim()}”</strong>
+              Probeer een andere zoekterm.
+            </>
+          ) : (
+            <>
+              <strong>Nog geen apparaten</strong>
+              Tik op + om je huis door te lopen en apparaten toe te voegen.
+            </>
+          )}
+        </div>
       ) : (
-        <div className="apparaten-raster">
-          {gefilterd.map((a) => {
-            const taak = volgendeTaak[a._id]
-            return (
-              <Link
-                to={`/apparaten/${a._id}`}
-                key={a._id}
-                className={`apparaatkaart ${a.archivedAt ? 'gearchiveerd' : ''}`}
-              >
-                <div className="apparaatkaart-kop">
-                  {a.category && <span className="chip">{a.category}</span>}
-                  {a.archivedAt && <span className="chip">gearchiveerd</span>}
-                </div>
-                <h3>{a.name}</h3>
-                <p className="klein gedempt">
-                  {a.location}
-                  {a.brand && ` · ${a.brand}`}
-                  {a.model && ` ${a.model}`}
-                </p>
-                <p className="klein gedempt">Geplaatst: {formatDatum(a.installedAt)}</p>
-                <div className="apparaatkaart-voet">
-                  {taak ? (
-                    <>
-                      <span className="klein">{taak.title}</span>
-                      <span className={`badge ${urgentie(taak.nextDue)}`}>{relatief(taak.nextDue)}</span>
-                    </>
-                  ) : a.archivedAt ? (
-                    <span className="klein gedempt">Geen taken</span>
-                  ) : (
-                    <>
-                      <span className="klein gedempt">Nog geen onderhoudstaak</span>
-                      <span className="badge onvolledig">onvolledig</span>
-                    </>
-                  )}
-                </div>
-              </Link>
-            )
-          })}
+        <div className="lijst">
+          {groepen.map(({ ruimte, items }) => (
+            <section key={ruimte} className="groep" aria-label={ruimte}>
+              <h2 className="groep__kop">
+                {ruimte}
+                <span className="groep__aantal cijfers">{items.length}</span>
+              </h2>
+              {items.map((a) => {
+                const taak = volgende[a._id]
+                const meta = [[a.brand, a.model].filter(Boolean).join(' '), a.category].filter(Boolean)
+                return (
+                  <div key={a._id} className="rij-wrap" style={{ '--i': Math.min(volgnummer++, 12) }}>
+                    <div className="rij-clip">
+                      <div className={`rij ${a.archivedAt ? 'rij--uit' : ''}`}>
+                        <div className="rij__hoofd">
+                          <Link to={`/apparaten/${a._id}`} className="rij__titel rij__link">{a.name}</Link>
+                          {meta.length > 0 && <span className="rij__meta">{meta.join(' · ')}</span>}
+                        </div>
+                        {a.archivedAt ? (
+                          <span className="tag">Gearchiveerd</span>
+                        ) : taak ? (
+                          <span className="rij__volgende">
+                            <span className="rij__meta alleen-breed">{taak.title}</span>
+                            <span className={`rij__datum cijfers rij__datum--${urgentie(taak.nextDue)}`}>
+                              {datumLabel(taak.nextDue)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="tag tag--amber">Onvolledig</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </section>
+          ))}
         </div>
       )}
+      {sheet}
     </>
   )
 }

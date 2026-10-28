@@ -1,24 +1,30 @@
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
-import { archiveAsset, createTask, getAsset, getLogs, getTasks, restoreAsset, updateAsset } from '../api'
+import { useContext, useState } from 'react'
+import { Link, useParams } from 'react-router'
+import { ArchiveBoxIcon, ArrowUturnLeftIcon, ChevronLeftIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { archiveAsset, getAsset, getLogs, getTasks, restoreAsset } from '../api'
 import { useApi } from '../hooks/useApi'
-import { formatDatum, naarInputDatum, vandaagInput, vanInputDatum } from '../utils/datum'
-import { rijenNaarSpecs, specsNaarRijen } from '../utils/specs'
-import SpecsEditor from '../components/SpecsEditor'
-import TaskCard from '../components/TaskCard'
-import TaakAfrondenDialoog from '../components/TaakAfrondenDialoog'
-import NogNietKlaar from '../components/NogNietKlaar'
-import Toast from '../components/Toast'
 import { useAfvinken } from '../hooks/useAfvinken'
-import { Fout, Laden, Leeg } from '../components/Status'
+import { formatDatum } from '../utils/datum'
+import { AppContext } from '../ui/appContext'
+import Kop from '../ui/Kop'
+import Popmenu from '../ui/Popmenu'
+import TaakRij from '../ui/TaakRij'
+import Melding from '../ui/Melding'
+import ApparaatSheet from '../ui/ApparaatSheet'
+import TaakSheet from '../ui/TaakSheet'
+import AfrondenSheet from '../ui/AfrondenSheet'
+import { LijstFout, LijstLaden } from '../ui/LijstStatus'
+import '../ui/Lijst.css'
+import './ApparaatDetail.css'
 
+// Eén apparaat. Wat je hier komt doen staat bovenaan: de taken.
+// Desktop: taken en logboek links, gegevens rechts. Mobiel: alles onder elkaar.
 function ApparaatDetail() {
-  // Het :id uit de URL /apparaten/:id
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { id } = useParams() // het :id uit de URL /apparaten/:id
+  const { versie } = useContext(AppContext)
 
-  // Drie collecties, drie verzoeken: het apparaat, de taken, het logboek.
-  // De backend heeft (nog) geen /assets/{id}/tasks, dus we halen alle taken op en filteren.
+  // Drie collecties, drie verzoeken. De backend heeft (nog) geen /assets/{id}/tasks,
+  // dus we halen alle taken op en filteren.
   const { data, laden, fout, herlaad } = useApi(
     () =>
       Promise.all([getAsset(id), getTasks(), getLogs(id)]).then(([apparaat, taken, logs]) => ({
@@ -26,34 +32,32 @@ function ApparaatDetail() {
         taken: taken.filter((t) => t.assetId === id),
         logs,
       })),
-    id,
+    `${id}-${versie}`,
+  )
+  const { afvinken, ...melding } = useAfvinken(herlaad)
+  const [open, setOpen] = useState(null) // 'bewerken' | 'taak' | { afronden: taak }
+  const [actieFout, setActieFout] = useState(null)
+
+  const terug = (
+    <Link to="/apparaten" className="terug">
+      <ChevronLeftIcon aria-hidden />
+      Apparaten
+    </Link>
   )
 
-  const [bewerken, setBewerken] = useState(false)
-  const [afronden, setAfronden] = useState(null)
-  const [actieFout, setActieFout] = useState(null)
-  const { afvinken, bezigMet, ...toast } = useAfvinken(herlaad)
-
-  if (laden && !data) return <Laden />
-  if (fout) return <Fout melding={fout} opnieuw={herlaad} />
+  if (laden && !data) return <>{terug}<Kop titel=" " /><LijstLaden rijen={3} /></>
+  if (fout) return <>{terug}<Kop titel="Apparaat" /><LijstFout melding={fout} opnieuw={herlaad} /></>
 
   const { apparaat, taken, logs } = data
   const gearchiveerd = apparaat.archivedAt !== null
   const takenPerId = Object.fromEntries(taken.map((t) => [t._id, t]))
+  const gesorteerd = [...taken].sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue))
 
-  async function archiveer() {
-    if (!window.confirm(`"${apparaat.name}" archiveren? De taken worden ook gearchiveerd.`)) return
+  // Archiveren vraagt niet om bevestiging: de pagina blijft staan met een knop "Terugzetten"
+  async function actie(functie) {
+    setActieFout(null)
     try {
-      await archiveAsset(id)
-      navigate('/apparaten')
-    } catch (err) {
-      setActieFout(err.message)
-    }
-  }
-
-  async function zetTerug() {
-    try {
-      await restoreAsset(id)
+      await functie(id)
       herlaad()
     } catch (err) {
       setActieFout(err.message)
@@ -62,286 +66,153 @@ function ApparaatDetail() {
 
   return (
     <>
-      <header className="paginakop">
-        <div>
-          <Link to="/apparaten" className="klein">← Apparaten</Link>
-          <h1>{apparaat.name}</h1>
-          <div className="chips">
-            {apparaat.category && <span className="chip">{apparaat.category}</span>}
-            <span className="chip">{apparaat.location}</span>
-            {gearchiveerd && <span className="chip waarschuwing">gearchiveerd op {formatDatum(apparaat.archivedAt)}</span>}
-          </div>
-        </div>
-        <div className="knoppenrij">
-          {gearchiveerd ? (
-            <button className="knop primair" onClick={zetTerug}>Terugzetten</button>
-          ) : (
-            <>
-              {!bewerken && <button className="knop" onClick={() => setBewerken(true)}>Bewerken</button>}
-              <button className="knop gevaar" onClick={archiveer}>Archiveren</button>
-            </>
-          )}
-        </div>
-      </header>
-      {actieFout && <p className="foutmelding">{actieFout}</p>}
-
-      <div className="detail-raster">
-        <div className="kolom">
-          {bewerken ? (
-            <ApparaatBewerken
-              apparaat={apparaat}
-              onAnnuleer={() => setBewerken(false)}
-              onOpgeslagen={() => {
-                setBewerken(false)
-                herlaad()
-              }}
+      {terug}
+      <Kop
+        titel={apparaat.name}
+        onder={[apparaat.location, apparaat.category].filter(Boolean).join(' · ')}
+      >
+        {!gearchiveerd && (
+          <>
+            <button type="button" className="btn" onClick={() => setOpen('bewerken')}>
+              <PencilSquareIcon aria-hidden />
+              <span className="alleen-breed">Bewerken</span>
+            </button>
+            <Popmenu
+              label="Meer acties voor dit apparaat"
+              items={[{ label: 'Archiveren', icoon: ArchiveBoxIcon, onKies: () => actie(archiveAsset) }]}
             />
-          ) : (
-            <ApparaatGegevens apparaat={apparaat} />
-          )}
+          </>
+        )}
+      </Kop>
 
-          <section className="kaart">
-            <div className="kaart-kop">
-              <h2>Foto's & documenten</h2>
-            </div>
-            <Leeg>Nog geen foto's of documenten.</Leeg>
-            <div className="knoppenrij">
-              <NogNietKlaar uitleg="foto-upload endpoint" klein>📷 Foto</NogNietKlaar>
-              <NogNietKlaar uitleg="document-upload (handleiding, garantie)" klein>📄 Document</NogNietKlaar>
-            </div>
-          </section>
+      {gearchiveerd && (
+        <div className="banner">
+          <span>Gearchiveerd op {formatDatum(apparaat.archivedAt)}. De taken staan stil.</span>
+          <button type="button" className="btn" onClick={() => actie(restoreAsset)}>
+            <ArrowUturnLeftIcon aria-hidden />
+            Terugzetten
+          </button>
         </div>
+      )}
+      {actieFout && <p className="formfout apparaat__fout">{actieFout}</p>}
 
-        <div className="kolom">
-          <section className="kaart">
-            <h2>Onderhoudstaken</h2>
-            {taken.length === 0 && gearchiveerd ? (
-              <Leeg>Geen taken.</Leeg>
-            ) : taken.length === 0 ? (
-              <p className="hint-onvolledig">
-                <span className="badge onvolledig">onvolledig</span> Voeg een onderhoudstaak toe, anders krijg je
-                voor dit apparaat nooit een seintje.
-              </p>
+      <div className="apparaat">
+        <div className="apparaat__hoofd">
+          <section className="sectie" aria-labelledby="kop-taken">
+            <div className="sectie__kop">
+              <h2 id="kop-taken">Onderhoud</h2>
+              {!gearchiveerd && (
+                <button type="button" className="btn btn--stil" onClick={() => setOpen('taak')}>
+                  <PlusIcon aria-hidden />
+                  Taak
+                </button>
+              )}
+            </div>
+            {taken.length === 0 ? (
+              <div className="lijst lijst-leeg">
+                {gearchiveerd ? (
+                  'Geen taken.'
+                ) : (
+                  <>
+                    <strong>
+                      <span className="tag tag--amber">Onvolledig</span> Nog geen onderhoudstaak
+                    </strong>
+                    Zonder taak krijg je voor dit apparaat nooit een seintje.
+                    <div>
+                      <button type="button" className="btn btn--primair lijst-leeg__knop" onClick={() => setOpen('taak')}>
+                        <PlusIcon aria-hidden />
+                        Taak toevoegen
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
-              <div className="takenlijst">
-                {taken.map((taak) => (
-                  <TaskCard
-                    key={taak._id}
+              <div className="lijst">
+                {gesorteerd.map((taak, i) => (
+                  <TaakRij
+                    key={`${taak._id}-${taak.nextDue}`}
                     taak={taak}
-                    onAfvinken={gearchiveerd ? null : afvinken}
-                    onDetails={gearchiveerd ? null : setAfronden}
-                    bezig={bezigMet === taak._id}
-                  >
-                    <NogNietKlaar uitleg="PATCH /tasks/{id} bestaat nog niet" klein>Bewerk</NogNietKlaar>
-                  </TaskCard>
+                    index={i}
+                    opApparaat
+                    uit={gearchiveerd}
+                    onAfvinken={afvinken}
+                    onDetails={(t) => setOpen({ afronden: t })}
+                  />
                 ))}
               </div>
             )}
-            {!gearchiveerd && <TaakToevoegen assetId={id} onToegevoegd={herlaad} startOpen={taken.length === 0} />}
           </section>
 
-          <section className="kaart">
-            <h2>Logboek</h2>
+          <section className="sectie" aria-labelledby="kop-logboek">
+            <div className="sectie__kop">
+              <h2 id="kop-logboek">Logboek</h2>
+            </div>
             {logs.length === 0 ? (
-              <Leeg>Nog niets uitgevoerd.</Leeg>
+              <p className="sectie__leeg">Nog niets uitgevoerd.</p>
             ) : (
-              <ul className="logboek">
-                {logs.map((log) => (
-                  <li key={log._id}>
-                    <div className="logboek-kop">
-                      <strong>{takenPerId[log.taskId]?.title ?? 'Onderhoud'}</strong>
-                      <span className="gedempt klein">{formatDatum(log.doneAt)}</span>
-                    </div>
-                    <p className="klein gedempt">
-                      {log.performedBy && `door ${log.performedBy}`}
-                      {log.performedBy && log.cost !== null && ' · '}
-                      {log.cost !== null && `€ ${log.cost}`}
-                    </p>
-                    {log.notes && <p className="klein">{log.notes}</p>}
-                  </li>
-                ))}
-              </ul>
+              <ol className="logboek">
+                {logs.map((log) => {
+                  const extra = [log.performedBy, log.cost !== null && log.cost !== undefined && `€ ${log.cost}`].filter(Boolean)
+                  return (
+                    <li key={log._id} className="logboek__regel">
+                      <span className="logboek__datum cijfers">{formatDatum(log.doneAt)}</span>
+                      <div className="logboek__tekst">
+                        <span className="logboek__titel">{takenPerId[log.taskId]?.title ?? 'Onderhoud'}</span>
+                        {extra.length > 0 && <span className="logboek__extra cijfers">{extra.join(' · ')}</span>}
+                        {log.notes && <p className="logboek__notitie">{log.notes}</p>}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ol>
             )}
           </section>
         </div>
+
+        <aside className="apparaat__zij">
+          <section className="sectie" aria-labelledby="kop-gegevens">
+            <div className="sectie__kop">
+              <h2 id="kop-gegevens">Gegevens</h2>
+            </div>
+            <dl className="gegevens">
+              <Gegeven label="Merk" waarde={apparaat.brand} />
+              <Gegeven label="Model" waarde={apparaat.model} />
+              <Gegeven label="Geplaatst" waarde={apparaat.installedAt && formatDatum(apparaat.installedAt)} />
+              {Object.entries(apparaat.specs ?? {}).map(([sleutel, waarde]) => (
+                <Gegeven key={sleutel} label={sleutel} waarde={String(waarde)} />
+              ))}
+            </dl>
+          </section>
+
+          <section className="sectie" aria-labelledby="kop-bestanden">
+            <div className="sectie__kop">
+              <h2 id="kop-bestanden">Foto's en documenten</h2>
+              <span className="binnenkort">Binnenkort</span>
+            </div>
+            <p className="sectie__leeg">Typeplaatje, handleiding en garantiebewijs bij elkaar.</p>
+          </section>
+        </aside>
       </div>
 
-      {afronden && (
-        <TaakAfrondenDialoog
-          taak={afronden}
-          onSluit={() => setAfronden(null)}
-          onKlaar={() => {
-            setAfronden(null)
-            herlaad()
-          }}
-        />
+      {open === 'bewerken' && (
+        <ApparaatSheet apparaat={apparaat} onOpgeslagen={herlaad} onSluit={() => setOpen(null)} />
       )}
-      <Toast {...toast} />
+      {open === 'taak' && <TaakSheet apparaat={apparaat} onOpgeslagen={herlaad} onSluit={() => setOpen(null)} />}
+      {open?.afronden && (
+        <AfrondenSheet taak={open.afronden} onAfvinken={afvinken} onSluit={() => setOpen(null)} />
+      )}
+      <Melding {...melding} />
     </>
   )
 }
 
-// ---------- Kleinere componenten, alleen gebruikt op deze pagina ----------
-
-function ApparaatGegevens({ apparaat }) {
-  const specs = Object.entries(apparaat.specs ?? {})
+function Gegeven({ label, waarde }) {
   return (
-    <section className="kaart">
-      <h2>Gegevens</h2>
-      <dl className="gegevens">
-        <dt>Merk</dt>
-        <dd>{apparaat.brand ?? '–'}</dd>
-        <dt>Model</dt>
-        <dd>{apparaat.model ?? '–'}</dd>
-        <dt>Geplaatst</dt>
-        <dd>{formatDatum(apparaat.installedAt)}</dd>
-      </dl>
-
-      <h3>Specificaties</h3>
-      {specs.length === 0 ? (
-        <Leeg>Geen specificaties.</Leeg>
-      ) : (
-        <dl className="gegevens">
-          {specs.map(([sleutel, waarde]) => (
-            <div key={sleutel} className="gegevens-rij">
-              <dt>{sleutel}</dt>
-              <dd>{String(waarde)}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-    </section>
-  )
-}
-
-function ApparaatBewerken({ apparaat, onAnnuleer, onOpgeslagen }) {
-  // De state begint als kopie van het apparaat; pas bij Opslaan gaat het naar de backend
-  const [form, setForm] = useState({
-    name: apparaat.name,
-    category: apparaat.category ?? '',
-    location: apparaat.location,
-    brand: apparaat.brand ?? '',
-    model: apparaat.model ?? '',
-    installedAt: naarInputDatum(apparaat.installedAt),
-  })
-  const [specs, setSpecs] = useState(specsNaarRijen(apparaat.specs))
-  const [bezig, setBezig] = useState(false)
-  const [fout, setFout] = useState(null)
-
-  function wijzig(e) {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  async function opslaan(e) {
-    e.preventDefault()
-    setBezig(true)
-    setFout(null)
-    try {
-      // PATCH = gedeeltelijke update. De backend zet alleen de velden die we sturen.
-      await updateAsset(apparaat._id, {
-        name: form.name.trim(),
-        category: form.category.trim() || null,
-        location: form.location.trim(),
-        brand: form.brand.trim() || null,
-        model: form.model.trim() || null,
-        installedAt: vanInputDatum(form.installedAt),
-        specs: rijenNaarSpecs(specs),
-      })
-      onOpgeslagen()
-    } catch (err) {
-      setFout(err.message)
-      setBezig(false)
-    }
-  }
-
-  return (
-    <form className="kaart formulier" onSubmit={opslaan}>
-      <h2>Gegevens bewerken</h2>
-      <div className="velden-raster">
-        <label>Naam *<input name="name" value={form.name} onChange={wijzig} required /></label>
-        <label>Categorie<input name="category" value={form.category} onChange={wijzig} /></label>
-        <label>Locatie *<input name="location" value={form.location} onChange={wijzig} required /></label>
-        <label>Merk<input name="brand" value={form.brand} onChange={wijzig} /></label>
-        <label>Model<input name="model" value={form.model} onChange={wijzig} /></label>
-        <label>Geplaatst op<input type="date" name="installedAt" value={form.installedAt} onChange={wijzig} /></label>
-      </div>
-
-      <fieldset>
-        <legend>Specificaties</legend>
-        <SpecsEditor rijen={specs} onChange={setSpecs} bestaandeVastzetten />
-      </fieldset>
-
-      {fout && <p className="foutmelding">{fout}</p>}
-      <div className="knoppenrij">
-        <span className="vulling" />
-        <button type="button" className="knop" onClick={onAnnuleer}>Annuleren</button>
-        <button type="submit" className="knop primair" disabled={bezig}>{bezig ? 'Opslaan…' : 'Opslaan'}</button>
-      </div>
-    </form>
-  )
-}
-
-// startOpen: formulier meteen open tonen (bij een apparaat zonder taken)
-function TaakToevoegen({ assetId, onToegevoegd, startOpen = false }) {
-  const leeg = { title: '', every: 1, unit: 'years', nextDue: vandaagInput() }
-  const [open, setOpen] = useState(startOpen)
-  // Alleen focussen na een klik; bij startOpen zou je telefoon anders meteen het toetsenbord openen
-  const [geklikt, setGeklikt] = useState(false)
-  const [taak, setTaak] = useState(leeg)
-  const [fout, setFout] = useState(null)
-
-  function wijzig(e) {
-    setTaak({ ...taak, [e.target.name]: e.target.value })
-  }
-
-  async function opslaan(e) {
-    e.preventDefault()
-    setFout(null)
-    try {
-      await createTask({
-        assetId,
-        title: taak.title.trim(),
-        every: Number(taak.every),
-        unit: taak.unit,
-        nextDue: vanInputDatum(taak.nextDue),
-      })
-      setTaak(leeg)
-      setOpen(false)
-      onToegevoegd()
-    } catch (err) {
-      setFout(err.message)
-    }
-  }
-
-  if (!open) {
-    return <button className="knop klein" onClick={() => { setOpen(true); setGeklikt(true) }}>+ Taak toevoegen</button>
-  }
-
-  return (
-    <form className="taak-toevoegen" onSubmit={opslaan}>
-      <div className="velden-raster">
-        <label>Taak<input name="title" value={taak.title} onChange={wijzig} required autoFocus={geklikt} placeholder="Filter vervangen" /></label>
-        <label>
-          Elke
-          <div className="interval-invoer">
-            <input type="number" min="1" name="every" value={taak.every} onChange={wijzig} required />
-            <select name="unit" value={taak.unit} onChange={wijzig}>
-              <option value="days">dagen</option>
-              <option value="weeks">weken</option>
-              <option value="months">maanden</option>
-              <option value="years">jaar</option>
-            </select>
-          </div>
-        </label>
-        <label>Eerste keer<input type="date" name="nextDue" value={taak.nextDue} onChange={wijzig} required /></label>
-      </div>
-      {fout && <p className="foutmelding">{fout}</p>}
-      <div className="knoppenrij">
-        <span className="vulling" />
-        <button type="button" className="knop klein" onClick={() => setOpen(false)}>Annuleren</button>
-        <button type="submit" className="knop primair klein">Toevoegen</button>
-      </div>
-    </form>
+    <div className="gegevens__rij">
+      <dt>{label}</dt>
+      <dd className={waarde ? '' : 'zwak-tekst'}>{waarde || '—'}</dd>
+    </div>
   )
 }
 
