@@ -1,9 +1,10 @@
 from fastapi import HTTPException, APIRouter
 from datetime import datetime, timezone
 
-from database import assets_col, tasks_col
+from database import assets_col, tasks_col, rooms_col, categories_col
 from models import (Asset, AssetCreate, AssetUpdate)
 from helpers import parse_object_id, find_or_404
+from routers.labels import zorg_voor_label
 
 router = APIRouter(tags=["Apparaten"])
 
@@ -21,6 +22,9 @@ def get_asset(asset_id: str):
 @router.post("/assets", response_model=Asset, status_code=201)
 def create_asset(asset: AssetCreate):
     doc = asset.model_dump()
+    # Nieuwe ruimte of categorie ingetypt? Dan komt die ook in de lijst (zie Instellingen)
+    zorg_voor_label(rooms_col, doc["location"])
+    zorg_voor_label(categories_col, doc["category"])
     result = assets_col.insert_one(doc)
     doc["_id"] = result.inserted_id
     return doc
@@ -37,6 +41,9 @@ def update_asset(asset_id: str, updates:AssetUpdate):
 
     if not changes:
         raise HTTPException(status_code=422, detail="Geen velden om te wijzigen")
+
+    zorg_voor_label(rooms_col, changes.get("location"))
+    zorg_voor_label(categories_col, changes.get("category"))
 
     if "specs" in changes:
         for key, value in changes.pop("specs").items():

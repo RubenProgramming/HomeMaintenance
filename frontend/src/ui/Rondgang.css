@@ -1,0 +1,43 @@
+.rondgang { display: flex; flex-direction: column; gap: var(--r-4); }
+.rondgang__vraag { color: var(--kl-tekst-gedempt); }
+
+.ruimtes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--r-2);
+}
+.ruimte {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-2);
+  height: 44px;
+  padding: 0 var(--r-3);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  border-radius: var(--hoek);
+  background: transparent;
+  color: var(--kl-tekst);
+  font-weight: var(--gewicht-medium);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duur-snel), border-color var(--duur-snel);
+}
+.ruimte:hover { background: var(--kl-vlak-hover); border-color: var(--kl-tekst-zwak); }
+.ruimte__aantal { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); font-weight: var(--gewicht-normaal); }
+
+.rondgang__ruimte { display: flex; align-items: center; justify-content: space-between; gap: var(--r-2); }
+.rondgang__ruimte h3 { font-size: var(--tekst-xl); font-weight: var(--gewicht-vet); }
+
+.rondgang__invoer { display: flex; gap: var(--r-2); }
+.rondgang__invoer .invoer { flex: 1; min-width: 0; }
+.rondgang__hint { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); }
+
+/* In de sheet loopt de lijst niet tot de schermrand */
+.rondgang .lijst { margin: 0; border-radius: var(--hoek); border: var(--rand); }
+
+@media (max-width: 767px) {
+  .ruimtes { grid-template-columns: 1fr 1fr; }
+  .ruimte { height: 52px; }
+  .rondgang__invoer .btn { height: 44px; }
+}

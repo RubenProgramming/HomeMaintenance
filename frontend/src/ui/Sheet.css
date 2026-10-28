@@ -1,0 +1,83 @@
+.sheet { position: fixed; inset: 0; z-index: 50; }
+
+.sheet__achtergrond {
+  position: absolute;
+  inset: 0;
+  background: var(--kl-overlay);
+  animation: sheet-vervaag var(--duur-traag) var(--curve);
+}
+
+/* Desktop: paneel rechts */
+.sheet__paneel {
+  position: absolute;
+  top: var(--r-2);
+  right: var(--r-2);
+  bottom: var(--r-2);
+  display: flex;
+  flex-direction: column;
+  width: min(440px, calc(100vw - 2 * var(--r-2)));
+  border-radius: var(--hoek);
+  background: var(--kl-achtergrond);
+  box-shadow: var(--schaduw-paneel);
+  outline: none;
+  animation: sheet-rechts-in var(--duur-traag) var(--curve);
+}
+.sheet__greep { display: none; }
+
+.sheet__kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-3);
+  padding: var(--r-3) var(--r-3) var(--r-3) var(--r-5);
+  border-bottom: var(--rand);
+}
+.sheet__kop h2 { margin: 0; font-size: var(--tekst-lg); font-weight: var(--gewicht-vet); }
+
+.sheet__inhoud { flex: 1; overflow-y: auto; padding: var(--r-5); }
+
+.sheet__voet {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--r-2);
+  padding: var(--r-3) var(--r-5);
+  border-top: var(--rand);
+}
+
+/* Sluiten: dezelfde beweging terug */
+.sheet--sluitend .sheet__achtergrond { animation: sheet-vervaag var(--duur) var(--curve-in) reverse forwards; }
+.sheet--sluitend .sheet__paneel { animation: sheet-rechts-in var(--duur) var(--curve-in) reverse forwards; }
+
+@keyframes sheet-vervaag { from { opacity: 0; } }
+@keyframes sheet-rechts-in { from { transform: translateX(24px); opacity: 0; } }
+@keyframes sheet-onder-in { from { transform: translateY(100%); } }
+
+/* Mobiel: sheet van onderen, knoppen binnen duimbereik */
+@media (max-width: 767px) {
+  .sheet__paneel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: sheet-onder-in var(--duur-traag) var(--curve);
+  }
+  .sheet__paneel--vol { height: 94dvh; max-height: none; }
+  .sheet--sluitend .sheet__paneel { animation: sheet-onder-in var(--duur) var(--curve-in) reverse forwards; }
+
+  .sheet__greep {
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: var(--r-2) auto 0;
+    border-radius: 2px;
+    background: var(--kl-rand-sterk);
+  }
+  .sheet__kop { padding: var(--r-2) var(--r-2) var(--r-2) var(--r-4); border-bottom: none; }
+  .sheet__inhoud { padding: var(--r-2) var(--r-4) var(--r-4); }
+  .sheet__voet { padding: var(--r-3) var(--r-4); }
+  .sheet__voet .btn { flex: 1; height: 48px; font-size: var(--tekst-md); }
+}

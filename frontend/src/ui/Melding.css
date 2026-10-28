@@ -1,0 +1,66 @@
+.melding {
+  position: fixed;
+  left: 50%;
+  bottom: var(--r-6);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--r-2);
+  width: max-content;
+  max-width: min(480px, calc(100vw - 2 * var(--r-4)));
+  padding: 0 var(--r-1) 0 var(--r-4);
+  height: 44px;
+  overflow: hidden;
+  border-radius: var(--hoek);
+  background: var(--kl-vlak);
+  box-shadow: var(--schaduw-paneel);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-sm);
+  transform: translateX(-50%);
+  animation: melding-in var(--duur-traag) var(--curve);
+}
+@keyframes melding-in {
+  from { opacity: 0; transform: translate(-50%, 12px) scale(0.98); }
+}
+
+.melding__tekst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.melding--fout .melding__tekst { color: var(--kl-rood); }
+
+.melding__actie,
+.melding__sluit {
+  height: 32px;
+  border: none;
+  border-radius: var(--hoek-sm);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.melding__actie { padding: 0 var(--r-2); color: var(--kl-accent); font-weight: var(--gewicht-vet); white-space: nowrap; }
+.melding__actie:hover { background: var(--kl-accent-zacht); }
+.melding__sluit { display: grid; place-items: center; width: 32px; color: var(--kl-tekst-zwak); }
+.melding__sluit:hover { color: var(--kl-tekst); }
+.melding__sluit svg { width: 16px; height: 16px; }
+
+/* Tijdbalk: loopt van vol naar leeg */
+.melding__tijd {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--kl-accent);
+  transform-origin: left;
+  animation: melding-tijd linear forwards;
+}
+.melding--fout .melding__tijd { background: var(--kl-rood); }
+@keyframes melding-tijd { to { transform: scaleX(0); } }
+
+@media (max-width: 767px) {
+  .melding {
+    bottom: calc(var(--tabbalk-hoogte) + env(safe-area-inset-bottom) + var(--r-3));
+    width: calc(100vw - 2 * var(--r-4));
+    height: 52px;
+  }
+  .melding__actie, .melding__sluit { height: 44px; }
+  .melding__sluit { width: 44px; }
+}

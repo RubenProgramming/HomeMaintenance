@@ -1,0 +1,19 @@
+.eerste-hoofdletter::first-letter { text-transform: uppercase; }
+.eerste-hoofdletter { display: inline-block; }
+
+.samenvatting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--r-2) var(--r-5);
+  margin: 0 0 var(--r-4);
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+}
+
+.samenvatting--bij { color: var(--kl-tekst); gap: var(--r-2); }
+.samenvatting--bij > svg { width: 18px; height: 18px; color: var(--kl-groen); flex: none; }
+
+@media (max-width: 767px) {
+  .groep__rechts { display: none; }
+}

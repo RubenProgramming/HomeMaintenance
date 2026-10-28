@@ -1,0 +1,166 @@
+/* ============================================================
+   App-frame: iconenbalk (desktop) en tabbalk (mobiel)
+   ============================================================ */
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail-breed) minmax(0, 1fr);
+  min-height: 100dvh;
+  transition: grid-template-columns var(--duur) var(--curve);
+}
+.shell--smal { grid-template-columns: var(--rail-smal) minmax(0, 1fr); }
+
+.shell__inhoud {
+  min-width: 0;
+  padding: var(--r-8) var(--r-10) var(--r-10);
+}
+.shell__inhoud > * { max-width: var(--inhoud-max); }
+
+/* ---------- Iconenbalk ---------- */
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-1);
+  padding: var(--r-3) var(--r-2);
+  background: var(--kl-vlak);
+  border-right: var(--rand);
+  overflow: hidden;
+}
+
+.rail__merk {
+  display: flex;
+  align-items: center;
+  gap: var(--r-3);
+  height: 36px;
+  padding: 0 6px;
+  margin-bottom: var(--r-3);
+  color: var(--kl-tekst);
+  font-weight: var(--gewicht-vet);
+  text-decoration: none;
+}
+.rail__logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: var(--hoek);
+  background: var(--kl-tekst);
+  color: var(--kl-achtergrond);
+  font-size: var(--tekst-sm);
+  font-weight: 700;
+}
+
+.rail__menu { display: flex; flex-direction: column; gap: 2px; }
+.rail__voet { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+
+.rail__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--r-3);
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--hoek);
+  background: transparent;
+  color: var(--kl-tekst-gedempt);
+  font: inherit;
+  font-size: var(--tekst-md);
+  font-weight: var(--gewicht-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--duur-snel), color var(--duur-snel);
+}
+.rail__item svg { width: 20px; height: 20px; flex: none; }
+.rail__item:hover { background: var(--kl-vlak-hover); color: var(--kl-tekst); text-decoration: none; }
+.rail__item.active { background: var(--kl-vlak-actief); color: var(--kl-tekst); }
+.rail__item.active svg { color: var(--kl-accent); }
+
+.rail__item--toevoegen {
+  margin-bottom: var(--r-3);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  color: var(--kl-tekst);
+}
+
+.rail__tekst { transition: opacity var(--duur) var(--curve); }
+.shell--smal .rail__tekst { opacity: 0; pointer-events: none; }
+
+/* Tooltip bij ingeklapte balk: het label verschijnt rechts van het icoon */
+.shell--smal .rail__item[data-tip]::after {
+  content: attr(data-tip);
+  position: fixed;
+  left: calc(var(--rail-smal) + 4px);
+  transform: translateX(-4px);
+  padding: 4px 8px;
+  border-radius: var(--hoek-sm);
+  background: var(--kl-vlak-actief);
+  box-shadow: var(--schaduw-pop);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-xs);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duur-snel), transform var(--duur-snel);
+  z-index: 50;
+}
+.shell--smal .rail__item[data-tip]:hover::after,
+.shell--smal .rail__item[data-tip]:focus-visible::after { opacity: 1; transform: translateX(0); }
+
+/* ---------- Tabbalk (alleen mobiel) ---------- */
+.tabbalk { display: none; }
+
+@media (max-width: 767px) {
+  .shell, .shell--smal { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; }
+  .shell__inhoud { padding: var(--r-4) var(--r-4) calc(var(--tabbalk-hoogte) + var(--r-8) + env(safe-area-inset-bottom)); }
+
+  .tabbalk {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    height: calc(var(--tabbalk-hoogte) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--kl-vlak);
+    border-top: var(--rand);
+  }
+  .tabbalk__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    height: 100%;
+    color: var(--kl-tekst-zwak);
+    font-size: 11px;
+    font-weight: var(--gewicht-medium);
+    text-decoration: none;
+  }
+  .tabbalk__item svg { width: 24px; height: 24px; }
+  .tabbalk__item.active { color: var(--kl-tekst); }
+  .tabbalk__item.active svg { color: var(--kl-accent); }
+  .tabbalk__item:hover { text-decoration: none; }
+
+  .tabbalk__plus {
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 40px;
+    border-radius: var(--hoek);
+    border: none;
+    background: var(--kl-accent);
+    color: var(--kl-accent-tekst);
+    cursor: pointer;
+  }
+  .tabbalk__plus svg { width: 22px; height: 22px; }
+  .tabbalk__plus:active { background: var(--kl-accent-hover); }
+}

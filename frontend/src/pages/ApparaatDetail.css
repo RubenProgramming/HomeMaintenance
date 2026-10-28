@@ -1,0 +1,101 @@
+.terug {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 var(--r-2) -4px;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  text-decoration: none;
+}
+.terug svg { width: 16px; height: 16px; }
+.terug:hover { color: var(--kl-tekst); text-decoration: none; }
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-3);
+  margin-bottom: var(--r-6);
+  padding: var(--r-2) var(--r-2) var(--r-2) var(--r-4);
+  border: var(--rand);
+  border-color: var(--kl-amber);
+  border-radius: var(--hoek);
+  background: var(--kl-amber-zacht);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-sm);
+}
+.apparaat__fout { margin-bottom: var(--r-4); }
+
+/* Twee kolommen op brede schermen: hoofdzaak links, naslag rechts */
+.apparaat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--r-8);
+  align-items: start;
+}
+.apparaat__hoofd, .apparaat__zij { display: flex; flex-direction: column; gap: var(--r-8); min-width: 0; }
+
+/* ---------- Sectie ---------- */
+.sectie__kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-2);
+  min-height: 32px;
+  margin-bottom: var(--r-2);
+}
+.sectie__kop h2 { display: flex; align-items: center; gap: var(--r-2); font-size: var(--tekst-md); font-weight: var(--gewicht-vet); }
+.sectie__kop h2 svg { width: 16px; height: 16px; color: var(--kl-tekst-zwak); }
+.sectie__leeg { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); }
+.sectie .lijst-leeg { padding: var(--r-6) var(--r-4); }
+.sectie .lijst-leeg strong { display: flex; align-items: center; justify-content: center; gap: var(--r-2); margin-bottom: var(--r-1); }
+
+/* ---------- Logboek: tijdlijn ---------- */
+.logboek { list-style: none; margin: 0; padding: 0; }
+.logboek__regel {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  grid-template-areas: 'datum tekst acties';
+  gap: var(--r-3);
+  padding: var(--r-2) 0;
+  border-top: var(--rand);
+  animation: rij-in var(--duur-traag) var(--curve) both;
+}
+.logboek__regel:first-child { border-top: none; }
+.logboek__datum { grid-area: datum; color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); padding-top: 1px; }
+.logboek__tekst { grid-area: tekst; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--r-2); }
+.logboek__titel { font-weight: var(--gewicht-medium); }
+.logboek__extra { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); }
+.logboek__notitie { flex-basis: 100%; color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); }
+/* ⋯-menu rechts; negatieve marge zodat de knop de regel niet hoger maakt */
+.logboek__acties { grid-area: acties; align-self: start; margin: -4px 0; }
+
+/* ---------- Gegevens ---------- */
+.gegevens { margin: 0; border-top: var(--rand); }
+.gegevens__rij {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--r-3);
+  padding: var(--r-2) 0;
+  border-bottom: var(--rand);
+  font-size: var(--tekst-sm);
+}
+.gegevens dt { color: var(--kl-tekst-gedempt); overflow-wrap: anywhere; }
+.gegevens dd { margin: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 1023px) {
+  .apparaat { grid-template-columns: minmax(0, 1fr); gap: var(--r-8); }
+}
+
+@media (max-width: 767px) {
+  .banner { flex-direction: column; align-items: stretch; padding: var(--r-3); }
+  .banner .btn { height: 44px; }
+  .sectie__kop .btn { height: 44px; }
+  .logboek__regel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'datum acties' 'tekst acties';
+    gap: 2px var(--r-3);
+    padding: var(--r-3) 0;
+  }
+  .gegevens__rij { padding: var(--r-3) 0; font-size: var(--tekst-md); }
+}

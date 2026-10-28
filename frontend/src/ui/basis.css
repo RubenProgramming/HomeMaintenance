@@ -1,0 +1,143 @@
+/* ============================================================
+   Basis: lettertype, achtergrond, knoppen en kleine hulpklassen.
+   Klassenamen in BEM-stijl: blok__element--variant
+   (bijv. .rij__titel, .btn--primair). Elk component heeft een eigen .css.
+   ============================================================ */
+html {
+  font-family: var(--font);
+  font-size: 16px;
+  font-feature-settings: 'cv11', 'ss01'; /* rustigere a en cijfers in Inter */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+h1, h2, h3, p { margin: 0; }
+a { color: var(--kl-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font: inherit; }
+
+body {
+  margin: 0;
+  background: var(--kl-achtergrond);
+  color: var(--kl-tekst);
+  font-family: var(--font);
+  font-size: var(--tekst-md);
+  line-height: 1.5;
+}
+
+/* Cijfers even breed: datums en aantallen staan netjes onder elkaar */
+.cijfers { font-variant-numeric: tabular-nums; }
+.gedempt-tekst { color: var(--kl-tekst-gedempt); }
+.zwak-tekst { color: var(--kl-tekst-zwak); }
+
+:focus-visible {
+  outline: 2px solid var(--kl-accent);
+  outline-offset: 2px;
+  border-radius: var(--hoek-sm);
+}
+
+/* ---------- Knop ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--r-2);
+  height: var(--tikdoel);
+  padding: 0 var(--r-3);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  border-radius: var(--hoek);
+  background: transparent;
+  color: var(--kl-tekst);
+  font: inherit;
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-medium);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duur-snel), border-color var(--duur-snel), color var(--duur-snel);
+}
+.btn:hover:not(:disabled) { background: var(--kl-vlak-hover); text-decoration: none; }
+.btn:disabled { cursor: not-allowed; opacity: 0.5; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+.btn--primair { background: var(--kl-accent); border-color: var(--kl-accent); color: var(--kl-accent-tekst); }
+.btn--primair:hover:not(:disabled) { background: var(--kl-accent-hover); border-color: var(--kl-accent-hover); }
+
+.btn--gevaar { background: var(--kl-rood); border-color: var(--kl-rood); color: #fff; }
+.btn--gevaar:hover:not(:disabled) { background: var(--kl-rood); filter: brightness(1.1); }
+
+.btn--stil { border-color: transparent; color: var(--kl-tekst-gedempt); }
+.btn--stil:hover:not(:disabled) { color: var(--kl-tekst); }
+
+.btn--icoon { width: var(--tikdoel); padding: 0; }
+.btn--icoon svg { width: 18px; height: 18px; }
+
+/* "Binnenkort": zichtbaar maar ingetogen */
+.binnenkort {
+  font-size: 10px;
+  font-weight: var(--gewicht-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--kl-tekst-zwak);
+  border: var(--rand);
+  border-radius: var(--hoek-sm);
+  padding: 0 var(--r-1);
+}
+
+/* ---------- Tag (klein label) ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-1);
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--hoek-sm);
+  font-size: var(--tekst-xs);
+  font-weight: var(--gewicht-medium);
+  white-space: nowrap;
+  background: var(--kl-vlak-actief);
+  color: var(--kl-tekst-gedempt);
+}
+.tag--rood { background: var(--kl-rood-zacht); color: var(--kl-rood); }
+.tag--amber { background: var(--kl-amber-zacht); color: var(--kl-amber); }
+.tag--info { background: var(--kl-info-zacht); color: var(--kl-info); }
+.tag svg { width: 12px; height: 12px; }
+
+/* Statusbolletje */
+.stip {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kl-tekst-zwak);
+  flex: none;
+}
+.stip--rood { background: var(--kl-rood); }
+.stip--amber { background: var(--kl-amber); }
+.stip--info { background: var(--kl-info); }
+.stip--accent { background: var(--kl-accent); }
+
+/* Laad-skelet: grijze blokjes die zacht pulseren */
+.skelet {
+  border-radius: var(--hoek-sm);
+  background: var(--kl-vlak-actief);
+  animation: skelet-puls 1.4s ease-in-out infinite;
+}
+@keyframes skelet-puls { 50% { opacity: 0.5; } }
+
+/* Alleen op brede schermen (op mobiel doet de tabbalk of een menu het al) */
+@media (max-width: 767px) {
+  .alleen-breed { display: none !important; }
+}
+
+/* Iemand die "minder beweging" heeft ingesteld krijgt geen animaties */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

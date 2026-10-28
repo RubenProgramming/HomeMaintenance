@@ -1,0 +1,39 @@
+/* Naam is een knop: klikken = hernoemen (net als in Linear) */
+.label-rij__naam {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--kl-tekst);
+  font-weight: var(--gewicht-medium);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+.label-rij__invoer { flex: 1; min-width: 0; height: 30px; margin-left: -9px; }
+.label-rij .rij__meta { flex: none; }
+
+/* Laatste rij: nieuwe naam toevoegen */
+.label-nieuw { border-top: var(--rand); color: var(--kl-tekst-zwak); }
+.label-nieuw > svg { width: 16px; height: 16px; flex: none; }
+.label-nieuw__invoer {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  min-height: var(--rij-hoogte);
+  border: none;
+  background: transparent;
+  color: var(--kl-tekst);
+  font: inherit;
+  outline: none;
+}
+.label-nieuw__invoer::placeholder { color: var(--kl-tekst-zwak); }
+.label-nieuw .btn { margin-right: var(--r-1); }
+
+@media (max-width: 767px) {
+  .label-rij__invoer { height: 40px; }
+  .label-nieuw__invoer { font-size: 16px; }
+}

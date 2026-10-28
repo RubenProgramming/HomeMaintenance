@@ -1,0 +1,29 @@
+.werkbalk {
+  display: flex;
+  align-items: center;
+  gap: var(--r-2);
+  margin-bottom: var(--r-4);
+}
+
+.zoekveld { position: relative; flex: 1; max-width: 360px; }
+.zoekveld svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: var(--kl-tekst-zwak);
+  pointer-events: none;
+}
+.zoekveld .invoer { height: 32px; padding-left: 32px; }
+
+.rij__volgende { display: flex; align-items: baseline; gap: var(--r-3); flex: none; min-width: 0; padding-right: var(--r-2); }
+.rij--uit .rij__titel { color: var(--kl-tekst-gedempt); }
+.rij > .tag { margin-right: var(--r-2); }
+
+@media (max-width: 767px) {
+  .zoekveld { max-width: none; }
+  .zoekveld .invoer { height: 44px; }
+  .werkbalk .keuze { height: 44px; }
+}

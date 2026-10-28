@@ -1,0 +1,42 @@
+.icoonkiezer { position: relative; flex: none; }
+.icoonkiezer__knop { display: grid; padding: 0; border: none; border-radius: var(--hoek); background: none; cursor: pointer; }
+.icoonkiezer__knop:hover .tegel { border-color: var(--kl-accent); color: var(--kl-tekst); }
+
+.icoonkiezer__rooster {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(6, 36px);
+  gap: 2px;
+  padding: var(--r-1);
+  border-radius: var(--hoek);
+  background: var(--kl-vlak);
+  box-shadow: var(--schaduw-pop);
+  transform-origin: top left;
+  animation: popmenu-in var(--duur) var(--curve);
+}
+
+.icoonkiezer__optie {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--hoek-sm);
+  background: transparent;
+  color: var(--kl-tekst-gedempt);
+  cursor: pointer;
+}
+.icoonkiezer__optie svg { width: 20px; height: 20px; }
+.icoonkiezer__optie:hover { background: var(--kl-vlak-hover); color: var(--kl-tekst); }
+.icoonkiezer__optie[aria-selected='true'] { background: var(--kl-accent-zacht); color: var(--kl-accent); }
+
+/* Rij met open kiezer boven de rijen eronder (zoals bij het ⋯-menu) */
+.rij-wrap:has(.icoonkiezer__rooster) { position: relative; z-index: 5; }
+
+@media (max-width: 767px) {
+  .icoonkiezer__optie { width: 44px; height: 44px; }
+  .icoonkiezer__rooster { grid-template-columns: repeat(6, 44px); }
+}

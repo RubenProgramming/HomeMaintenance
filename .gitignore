@@ -2,3 +2,8 @@
 .venv/
 test-venv/
 __pycache__/
+# Werkmappen van Claude-subagents
+.claude/worktrees/
+
+# Database-exports (bevatten al je gegevens)
+*.archive

@@ -1,0 +1,201 @@
+/* ============================================================
+   Lijsten: groepen met rijen, gescheiden door dunne lijnen.
+   Gebruikt door takenlijsten, apparaten en "onvolledig".
+   ============================================================ */
+.lijst {
+  border: var(--rand);
+  border-radius: var(--hoek);
+}
+/* Geen overflow: hidden (dan valt het ⋯-menu weg), dus de hoeken zelf afronden */
+.lijst > :first-child .groep__kop { border-radius: 5px 5px 0 0; }
+.lijst > :last-child .rij-wrap:last-child .rij { border-radius: 0 0 5px 5px; }
+.lijst + .lijst { margin-top: var(--r-6); }
+
+.groep + .groep { border-top: var(--rand); }
+/* Groepskop: getint in zijn eigen kleur (--kop-kleur) met een streep links,
+   zodat hij duidelijk als kop leest. Standaard het accent; statusgroepen hun statuskleur. */
+.groep__kop {
+  --kop-kleur: var(--kl-accent);
+  display: flex;
+  align-items: center;
+  gap: var(--r-2);
+  height: 36px;
+  padding: 0 var(--r-4);
+  background: color-mix(in srgb, var(--kop-kleur) 10%, var(--kl-vlak));
+  border-bottom: 1px solid color-mix(in srgb, var(--kop-kleur) 22%, var(--kl-rand));
+  box-shadow: inset 3px 0 0 var(--kop-kleur);
+  color: var(--kl-tekst);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-vet);
+}
+.groep__icoon { width: 16px; height: 16px; flex: none; color: var(--kop-kleur); }
+/* Aantal als klein badge, zodat het niet als deel van de titel leest */
+.groep__aantal {
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--kop-kleur) 18%, transparent);
+  color: var(--kop-kleur);
+  font-size: var(--tekst-xs);
+  font-weight: var(--gewicht-medium);
+  line-height: 18px;
+  text-align: center;
+}
+.groep__kop { scroll-margin-top: var(--r-4); }
+
+/* Groepen met een status: de hele kop in de statuskleur (zie status.js) */
+.groep__kop--rood { --kop-kleur: var(--kl-rood); }
+.groep__kop--amber { --kop-kleur: var(--kl-amber); }
+.groep__kop--info { --kop-kleur: var(--kl-info); }
+.groep__rechts { margin-left: auto; color: var(--kl-tekst-zwak); font-size: var(--tekst-xs); font-weight: var(--gewicht-normaal); }
+
+/* ---------- Rij ---------- */
+/* rij-wrap → rij-clip → rij: de buitenste twee zijn er alleen voor het
+   dichtklappen (grid-rows 1fr → 0fr) zonder dat de rij zelf vervormt. */
+.rij-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: minmax(0, 1fr); /* anders wordt de rij nooit smaller dan zijn inhoud */
+  animation: rij-in var(--duur-traag) var(--curve) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+  transition: grid-template-rows 260ms var(--curve), opacity 200ms var(--curve);
+}
+.rij-wrap + .rij-wrap .rij { border-top: var(--rand); }
+.rij-clip { min-height: 0; min-width: 0; }
+.rij-wrap--weg { grid-template-rows: 0fr; opacity: 0; }
+.rij-wrap--weg .rij-clip { overflow: hidden; }
+/* Rij met open menu boven de rijen eronder leggen */
+.rij-wrap:has(.popmenu__lijst) { position: relative; z-index: 5; }
+
+@keyframes rij-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+.rij {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--r-3);
+  min-height: var(--rij-hoogte);
+  padding: 0 var(--r-2) 0 var(--r-4);
+  transition: background var(--duur-snel);
+}
+.rij:hover { background: var(--kl-vlak-hover); }
+
+.rij__hoofd {
+  display: flex;
+  align-items: baseline;
+  gap: var(--r-2);
+  flex: 1;
+  min-width: 0;
+}
+.rij__titel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kl-tekst);
+  font-weight: var(--gewicht-medium);
+  text-decoration: none;
+}
+.rij__titel:hover { color: var(--kl-tekst); text-decoration: none; }
+/* De link bedekt de hele rij; knoppen erin liggen erboven */
+.rij__link::after { content: ''; position: absolute; inset: 0; }
+.rij .vinkje, .rij .popmenu, .rij__actie { position: relative; z-index: 1; }
+
+.rij__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--kl-tekst-zwak);
+  font-size: var(--tekst-sm);
+}
+
+.rij__datum {
+  flex: none;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+}
+.rij__datum--telaat { color: var(--kl-rood); font-weight: var(--gewicht-medium); }
+.rij__datum--week { color: var(--kl-amber); }
+
+/* Meta: het apparaat is belangrijker dan ruimte en interval */
+.rij__meta-sterk { color: var(--kl-tekst-gedempt); }
+
+/* Te laat: rode streep links, licht getinte rij en een rood rondje. Bewust alleen hier,
+   zodat het zeldzaam en dus betekenisvol blijft. */
+.taakrij--telaat { background: var(--kl-rood-zacht); box-shadow: inset 2px 0 0 var(--kl-rood); }
+.taakrij--telaat:hover { background: linear-gradient(var(--kl-rood-zacht), var(--kl-rood-zacht)), var(--kl-vlak-hover); }
+.taakrij--telaat .vinkje__rondje { border-color: var(--kl-rood); }
+.taakrij--week .vinkje__rondje { border-color: var(--kl-amber); }
+
+.rij__actie {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-medium);
+  text-decoration: none;
+}
+.rij__actie svg { width: 16px; height: 16px; }
+.rij__actie:hover { color: var(--kl-accent); text-decoration: none; }
+
+/* ---------- Vinkje ---------- */
+.vinkje {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: -6px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.vinkje__rondje {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--kl-tekst-zwak);
+  border-radius: 50%;
+  color: var(--kl-accent-tekst);
+  transition: border-color var(--duur-snel), background var(--duur) var(--curve), transform var(--duur) var(--curve);
+}
+.vinkje__rondje svg {
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: transform var(--duur-traag) cubic-bezier(0.34, 1.56, 0.64, 1); /* klein veertje */
+}
+.vinkje:disabled { cursor: default; opacity: 0.4; }
+.vinkje:hover:not(:disabled) .vinkje__rondje { border-color: var(--kl-accent); }
+.vinkje:hover:not(:disabled) .vinkje__rondje svg { transform: scale(0.7); color: var(--kl-accent); }
+.vinkje--aan .vinkje__rondje { background: var(--kl-accent); border-color: var(--kl-accent); transform: scale(1.1); }
+.vinkje--aan .vinkje__rondje svg,
+.vinkje--aan:hover .vinkje__rondje svg { transform: scale(1); color: var(--kl-accent-tekst); }
+
+/* ---------- Leeg / laden ---------- */
+.lijst-leeg {
+  padding: var(--r-8) var(--r-4);
+  text-align: center;
+  color: var(--kl-tekst-gedempt);
+}
+.lijst-leeg strong { display: block; color: var(--kl-tekst); font-weight: var(--gewicht-medium); }
+.lijst-leeg__knop { margin-top: var(--r-4); }
+
+/* ---------- Mobiel: twee regels per rij, grotere tikdoelen ---------- */
+@media (max-width: 767px) {
+  .rij { padding: var(--r-2) var(--r-1) var(--r-2) var(--r-3); }
+  .rij__hoofd { flex-direction: column; align-items: stretch; gap: 0; }
+  .rij__titel { font-size: var(--tekst-lg); white-space: normal; }
+  .vinkje { width: 44px; height: 44px; margin-left: -10px; margin-right: -8px; }
+  .vinkje__rondje { width: 22px; height: 22px; }
+  .vinkje__rondje svg { width: 14px; height: 14px; }
+  .groep__kop { padding: 0 var(--r-3); }
+  .lijst { margin: 0 calc(-1 * var(--r-4)); border-radius: 0; border-left: none; border-right: none; }
+}

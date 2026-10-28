@@ -1,0 +1,21 @@
+﻿<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Onderhoudsplanner</title>
+    <script>
+      // Thema direct zetten, vóór de eerste paint (anders flitst licht/donker). Zie useThema.js.
+      try {
+        var t = localStorage.getItem('thema')
+        if (t === 'licht') document.documentElement.dataset.theme = 'light'
+        if (t === 'donker') document.documentElement.dataset.theme = 'dark'
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

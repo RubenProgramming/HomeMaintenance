@@ -1,0 +1,51 @@
+/* Elke instelling: uitleg links, bediening rechts (desktop); onder elkaar op mobiel */
+.instelling {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--r-8);
+  padding: var(--r-6) 0;
+  border-top: var(--rand);
+}
+.instelling:first-of-type { border-top: none; padding-top: 0; }
+.instelling__uitleg h2 { display: flex; align-items: center; gap: var(--r-2); font-size: var(--tekst-md); font-weight: var(--gewicht-vet); }
+.instelling__uitleg h2 svg { width: 16px; height: 16px; color: var(--kl-tekst-zwak); }
+.instelling__uitleg p { margin-top: var(--r-1); color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); }
+
+/* Gesegmenteerde keuze (thema) */
+.segment {
+  display: inline-flex;
+  align-self: start;
+  justify-self: start;
+  padding: 2px;
+  border: var(--rand);
+  border-radius: var(--hoek);
+  background: var(--kl-vlak);
+}
+.segment__optie {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--r-3);
+  border: none;
+  border-radius: var(--hoek-sm);
+  background: transparent;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-medium);
+  cursor: pointer;
+  transition: background var(--duur-snel), color var(--duur-snel);
+}
+.segment__optie svg { width: 16px; height: 16px; }
+.segment__optie:hover { color: var(--kl-tekst); }
+.segment__optie[aria-checked='true'] {
+  background: var(--kl-vlak-actief);
+  color: var(--kl-tekst);
+  box-shadow: 0 0 0 1px var(--kl-rand-sterk);
+}
+
+@media (max-width: 767px) {
+  .instelling { grid-template-columns: 1fr; gap: var(--r-3); }
+  .segment { display: flex; justify-self: stretch; }
+  .segment__optie { flex: 1; justify-content: center; height: 40px; }
+}
