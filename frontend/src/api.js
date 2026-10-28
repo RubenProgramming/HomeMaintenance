@@ -63,6 +63,17 @@ export const createTask = (taak) =>
 export const completeTask = (taakId, log) =>
   verzoek(`/tasks/${taakId}/done`, { methode: 'POST', body: log })
 
+// wijzigingen: alleen wat verandert, bijv. { title } of { nextDue } (uitstellen)
+export const updateTask = (taakId, wijzigingen) =>
+  verzoek(`/tasks/${taakId}`, { methode: 'PATCH', body: wijzigingen })
+
+// "Verwijderen" = archiveren; met restoreTask zet je hem terug
+export const archiveTask = (taakId) =>
+  verzoek(`/tasks/${taakId}`, { methode: 'DELETE' })
+
+export const restoreTask = (taakId) =>
+  verzoek(`/tasks/${taakId}/restore`, { methode: 'POST' })
+
 // ---------- Logboek (routers/logs.py) ----------
 
 export const getLogs = (assetId) => verzoek(`/assets/${assetId}/logs`)

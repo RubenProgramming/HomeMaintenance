@@ -64,6 +64,16 @@ class TaskCreate(BaseModel):
     unit: Literal["days", "weeks", "months", "years"]
     nextDue: datetime
 
+class TaskUpdate(BaseModel):
+    # Alles optioneel: je stuurt alleen wat je wilt wijzigen (zie PATCH /tasks/{id}).
+    # Ook "uitstellen" is gewoon een PATCH met alleen nextDue.
+    # Een expliciete null (bijv. "title": null) mag niet: het type is dan geen str.
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    title: str = Field(default=None, min_length=1)
+    every: int = Field(default=None, gt=0)
+    unit: Literal["days", "weeks", "months", "years"] = None
+    nextDue: datetime = None
+
 # LOGS
 
 class Log(BaseModel):

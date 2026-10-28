@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowTopRightOnSquareIcon, CheckCircleIcon, CheckIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  ForwardIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid'
 import { datumLabel, formatDatum, interval, urgentie } from '../utils/datum'
 import Popmenu from './Popmenu'
 import './Lijst.css'
@@ -16,12 +23,14 @@ function minderBeweging() {
 // - links het rondje: tik = klaar. Eerst animatie, dan pas het verzoek, zodat de rij
 //   niet halverwege verdwijnt. Mislukt het, dan komt de rij gewoon terug.
 // - de titel is een link naar het apparaat (de hele rij is klikbaar)
-// - ⋯-menu: afronden met details, of naar het apparaat
+// - ⋯-menu: afronden met details, uitstellen, bewerken, naar het apparaat, verwijderen.
+//   Verwijderen klapt de rij net zo dicht als afvinken (en komt terug als het mislukt).
 //
-// Props: taak, apparaat?, onAfvinken(taak) → Promise<boolean>, onDetails(taak), index (voor de inloop-animatie)
+// Props: taak, apparaat?, index (voor de inloop-animatie)
+// acties: uit useTaakActies: { afvinken, details, uitstellen, bewerken, verwijderen }
 // opApparaat: de rij staat op de pagina van het apparaat zelf (geen link, geen "Naar apparaat")
 // uit: archief, alleen tonen (geen vinkje of menu)
-function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat = false, uit = false }) {
+function TaakRij({ taak, apparaat, acties, index = 0, opApparaat = false, uit = false }) {
   const [fase, setFase] = useState('rust') // rust → aan → weg
   const navigate = useNavigate()
   const niveau = urgentie(taak.nextDue)
@@ -29,12 +38,21 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat 
 
   async function vink() {
     if (fase !== 'rust') return
-    const snel = minderBeweging()
     setFase('aan')
-    await wacht(snel ? 0 : TIJD_VINK)
+    await wacht(minderBeweging() ? 0 : TIJD_VINK)
+    await wegEnDan(acties.afvinken)
+  }
+
+  async function verwijder() {
+    if (fase !== 'rust') return
+    await wegEnDan(acties.verwijderen)
+  }
+
+  // Rij dichtklappen, dan pas de actie uitvoeren. Mislukt hij, dan komt de rij terug.
+  async function wegEnDan(actie) {
     setFase('weg')
-    await wacht(snel ? 0 : TIJD_WEG)
-    const gelukt = await onAfvinken(taak)
+    await wacht(minderBeweging() ? 0 : TIJD_WEG)
+    const gelukt = await actie(taak)
     if (!gelukt) setFase('rust')
   }
 
@@ -86,11 +104,17 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat 
             <Popmenu
               label={`Meer acties voor ${taak.title}`}
               items={[
-                { label: 'Afronden met details…', icoon: CheckCircleIcon, onKies: () => onDetails(taak) },
-                opApparaat
-                  ? { label: 'Taak bewerken', icoon: PencilSquareIcon, binnenkort: true }
-                  : { label: 'Naar apparaat', icoon: ArrowTopRightOnSquareIcon, onKies: () => navigate(naarApparaat) },
-              ]}
+                { label: 'Afronden met details…', icoon: CheckCircleIcon, onKies: () => acties.details(taak) },
+                { label: 'Uitstellen…', icoon: ForwardIcon, onKies: () => acties.uitstellen(taak) },
+                { label: 'Taak bewerken', icoon: PencilSquareIcon, onKies: () => acties.bewerken(taak, apparaat) },
+                // Op de apparaatpagina zelf heeft "Naar apparaat" geen zin
+                !opApparaat && {
+                  label: 'Naar apparaat',
+                  icoon: ArrowTopRightOnSquareIcon,
+                  onKies: () => navigate(naarApparaat),
+                },
+                { label: 'Verwijderen', icoon: TrashIcon, onKies: verwijder },
+              ].filter(Boolean)}
             />
           )}
         </div>
