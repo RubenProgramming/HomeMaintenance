@@ -1,4 +1,4 @@
-import { completeTask, undoLog } from '../api'
+import { completeTask, deleteLog } from '../api'
 import { vandaagInput, vanInputDatum } from '../utils/datum'
 import { useMelding } from './useMelding'
 
@@ -30,7 +30,7 @@ export function useAfvinken(herlaad) {
     if (!logId) return
     sluit()
     try {
-      await undoLog(logId)
+      await deleteLog(logId)
       herlaad()
     } catch (err) {
       toon({ tekst: err.message, fout: true })

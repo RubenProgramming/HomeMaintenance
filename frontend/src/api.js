@@ -67,8 +67,18 @@ export const completeTask = (taakId, log) =>
 
 export const getLogs = (assetId) => verzoek(`/assets/${assetId}/logs`)
 
-// Afronden ongedaan maken: verwijdert de logregel en zet nextDue van de taak terug
-export const undoLog = (logId) => verzoek(`/logs/${logId}`, { methode: 'DELETE' })
+// Los onderhoud vastleggen (reparatie, storing): log = { title, doneAt, performedBy, cost, notes }
+export const createLog = (assetId, log) =>
+  verzoek(`/assets/${assetId}/logs`, { methode: 'POST', body: log })
+
+// Logregel achteraf corrigeren; alleen de meegestuurde velden veranderen.
+// Verandert de datum van de laatste afvinking, dan rekent de backend de volgende datum opnieuw uit.
+export const updateLog = (logId, wijzigingen) =>
+  verzoek(`/logs/${logId}`, { methode: 'PATCH', body: wijzigingen })
+
+// Logregel definitief verwijderen. Ook "ongedaan maken" na afvinken: was dit de laatste
+// afvinking van een taak, dan zet de backend nextDue van die taak terug.
+export const deleteLog = (logId) => verzoek(`/logs/${logId}`, { methode: 'DELETE' })
 
 // ---------- Ruimtes en categorieën (routers/labels.py) ----------
 // soort: 'rooms' of 'categories'. Allebei dezelfde endpoints.

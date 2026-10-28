@@ -54,18 +54,21 @@
 .logboek { list-style: none; margin: 0; padding: 0; }
 .logboek__regel {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  grid-template-areas: 'datum tekst acties';
   gap: var(--r-3);
   padding: var(--r-2) 0;
   border-top: var(--rand);
   animation: rij-in var(--duur-traag) var(--curve) both;
 }
 .logboek__regel:first-child { border-top: none; }
-.logboek__datum { color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); padding-top: 1px; }
-.logboek__tekst { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--r-2); }
+.logboek__datum { grid-area: datum; color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); padding-top: 1px; }
+.logboek__tekst { grid-area: tekst; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--r-2); }
 .logboek__titel { font-weight: var(--gewicht-medium); }
 .logboek__extra { color: var(--kl-tekst-zwak); font-size: var(--tekst-sm); }
 .logboek__notitie { flex-basis: 100%; color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); }
+/* ⋯-menu rechts; negatieve marge zodat de knop de regel niet hoger maakt */
+.logboek__acties { grid-area: acties; align-self: start; margin: -4px 0; }
 
 /* ---------- Gegevens ---------- */
 .gegevens { margin: 0; border-top: var(--rand); }
@@ -88,6 +91,11 @@
   .banner { flex-direction: column; align-items: stretch; padding: var(--r-3); }
   .banner .btn { height: 44px; }
   .sectie__kop .btn { height: 44px; }
-  .logboek__regel { grid-template-columns: 1fr; gap: 2px; padding: var(--r-3) 0; }
+  .logboek__regel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'datum acties' 'tekst acties';
+    gap: 2px var(--r-3);
+    padding: var(--r-3) 0;
+  }
   .gegevens__rij { padding: var(--r-3) 0; font-size: var(--tekst-md); }
 }

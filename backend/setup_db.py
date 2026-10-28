@@ -22,6 +22,7 @@ LOGS_SCHEMA = {
         "properties": {
             "taskId": { "bsonType": ["objectId", "null"] },
             "assetId": { "bsonType": "objectId" },
+            "title": { "bsonType": ["string", "null"] },
             "doneAt": { "bsonType": "date" },
             "performedBy": { "bsonType": ["string", "null"] },
             "cost": { "bsonType": ["int", "long", "null"], "minimum": 0 },

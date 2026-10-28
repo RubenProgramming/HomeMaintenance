@@ -70,6 +70,9 @@ class Log(BaseModel):
     id: pyObjectId = Field(alias="_id")
     taskId: pyObjectId | None = None
     assetId: pyObjectId
+    # Alleen bij los onderhoud (reparatie, storing). Bij een afgevinkte taak blijft dit leeg:
+    # de UI toont dan de titel van de taak.
+    title: str | None = None
     doneAt: datetime
     performedBy: str | None = None
     cost: int | None = None
@@ -83,6 +86,22 @@ class LogCreate(BaseModel):
     cost: int | None = Field(default=None, ge=0)
     notes: str | None = None
     attachments: list[str] = []
+
+class ManualLogCreate(LogCreate):
+    # Los onderhoud vastleggen (POST /assets/{id}/logs): zonder taak, dus een titel is verplicht,
+    # bijv. "Pomp vervangen". str_strip_whitespace: alleen spaties telt niet als titel.
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    title: str = Field(min_length=1, max_length=120)
+
+class LogUpdate(BaseModel):
+    # Een logregel achteraf corrigeren (PATCH /logs/{id}). Alles optioneel, alleen wat je
+    # meestuurt verandert (exclude_unset). title en doneAt mogen niet leeg (null) worden.
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    title: str = Field(default=None, min_length=1, max_length=120)
+    doneAt: datetime = None
+    performedBy: str | None = None
+    cost: int | None = Field(default=None, ge=0)
+    notes: str | None = None
 
 
 # RUIMTES EN CATEGORIEËN (zelfde vorm, zie routers/labels.py)
