@@ -91,9 +91,16 @@ class Label(BaseModel):
     id: pyObjectId = Field(alias="_id")
     name: str
     order: int
+    icon: str | None = None  # naam van een icoon in de frontend (alleen gebruikt bij categorieën)
     assetCount: int = 0   # actieve apparaten (wat je in de app ziet)
     totalCount: int = 0   # inclusief gearchiveerd (die verhuizen ook mee)
 
 class LabelWrite(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     name: str = Field(min_length=1, max_length=60)
+
+class LabelUpdate(BaseModel):
+    # Allebei optioneel: hernoemen, een icoon kiezen, of allebei. icon: null = icoon weghalen.
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    name: str = Field(default=None, min_length=1, max_length=60)
+    icon: str | None = Field(default=None, max_length=40)

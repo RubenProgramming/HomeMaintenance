@@ -1,0 +1,34 @@
+.chips { display: flex; flex-wrap: wrap; gap: var(--r-2); margin: 0 0 var(--r-5); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 var(--r-3) 0 var(--r-2);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  border-radius: var(--hoek);
+  background: transparent;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-medium);
+  cursor: pointer;
+  transition: background var(--duur-snel), border-color var(--duur-snel);
+}
+.chip svg { width: 16px; height: 16px; color: var(--kl-tekst-zwak); }
+.chip strong { color: var(--kl-tekst); font-weight: var(--gewicht-vet); }
+.chip:hover { background: var(--kl-vlak-hover); }
+
+/* Getinte chips voor urgentie: kleur draagt de betekenis, het icoon bevestigt hem */
+.chip--rood { border-color: transparent; background: var(--kl-rood-zacht); color: var(--kl-rood); }
+.chip--rood svg, .chip--rood strong { color: var(--kl-rood); }
+.chip--amber { border-color: transparent; background: var(--kl-amber-zacht); color: var(--kl-amber); }
+.chip--amber svg, .chip--amber strong { color: var(--kl-amber); }
+.chip--info { border-color: transparent; background: var(--kl-info-zacht); color: var(--kl-info); }
+.chip--info svg, .chip--info strong { color: var(--kl-info); }
+.chip--rood:hover, .chip--amber:hover, .chip--info:hover { filter: brightness(1.15); }
+
+@media (max-width: 767px) {
+  .chip { height: 36px; }
+}

@@ -12,19 +12,42 @@
 .lijst + .lijst { margin-top: var(--r-6); }
 
 .groep + .groep { border-top: var(--rand); }
+/* Groepskop: getint in zijn eigen kleur (--kop-kleur) met een streep links,
+   zodat hij duidelijk als kop leest. Standaard het accent; statusgroepen hun statuskleur. */
 .groep__kop {
+  --kop-kleur: var(--kl-accent);
   display: flex;
   align-items: center;
   gap: var(--r-2);
   height: 36px;
   padding: 0 var(--r-4);
-  background: var(--kl-vlak);
-  border-bottom: var(--rand);
+  background: color-mix(in srgb, var(--kop-kleur) 10%, var(--kl-vlak));
+  border-bottom: 1px solid color-mix(in srgb, var(--kop-kleur) 22%, var(--kl-rand));
+  box-shadow: inset 3px 0 0 var(--kop-kleur);
   color: var(--kl-tekst);
   font-size: var(--tekst-sm);
-  font-weight: var(--gewicht-medium);
+  font-weight: var(--gewicht-vet);
 }
-.groep__aantal { color: var(--kl-tekst-zwak); font-weight: var(--gewicht-normaal); }
+.groep__icoon { width: 16px; height: 16px; flex: none; color: var(--kop-kleur); }
+/* Aantal als klein badge, zodat het niet als deel van de titel leest */
+.groep__aantal {
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--kop-kleur) 18%, transparent);
+  color: var(--kop-kleur);
+  font-size: var(--tekst-xs);
+  font-weight: var(--gewicht-medium);
+  line-height: 18px;
+  text-align: center;
+}
+.groep__kop { scroll-margin-top: var(--r-4); }
+
+/* Groepen met een status: de hele kop in de statuskleur (zie status.js) */
+.groep__kop--rood { --kop-kleur: var(--kl-rood); }
+.groep__kop--amber { --kop-kleur: var(--kl-amber); }
+.groep__kop--info { --kop-kleur: var(--kl-info); }
 .groep__rechts { margin-left: auto; color: var(--kl-tekst-zwak); font-size: var(--tekst-xs); font-weight: var(--gewicht-normaal); }
 
 /* ---------- Rij ---------- */
@@ -96,6 +119,16 @@
 }
 .rij__datum--telaat { color: var(--kl-rood); font-weight: var(--gewicht-medium); }
 .rij__datum--week { color: var(--kl-amber); }
+
+/* Meta: het apparaat is belangrijker dan ruimte en interval */
+.rij__meta-sterk { color: var(--kl-tekst-gedempt); }
+
+/* Te laat: rode streep links, licht getinte rij en een rood rondje. Bewust alleen hier,
+   zodat het zeldzaam en dus betekenisvol blijft. */
+.taakrij--telaat { background: var(--kl-rood-zacht); box-shadow: inset 2px 0 0 var(--kl-rood); }
+.taakrij--telaat:hover { background: linear-gradient(var(--kl-rood-zacht), var(--kl-rood-zacht)), var(--kl-vlak-hover); }
+.taakrij--telaat .vinkje__rondje { border-color: var(--kl-rood); }
+.taakrij--week .vinkje__rondje { border-color: var(--kl-amber); }
 
 .rij__actie {
   flex: none;

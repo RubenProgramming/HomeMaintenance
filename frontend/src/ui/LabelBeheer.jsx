@@ -1,9 +1,10 @@
 import { useContext, useRef, useState } from 'react'
 import { PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid'
-import { createLabel, deleteLabel, getLabels, renameLabel } from '../api'
+import { createLabel, deleteLabel, getLabels, updateLabel } from '../api'
 import { useApi } from '../hooks/useApi'
 import { AppContext } from './appContext'
 import Popmenu from './Popmenu'
+import IcoonKiezer from './IcoonKiezer'
 import Sheet from './Sheet'
 import { LijstFout, LijstLaden } from './LijstStatus'
 import './Lijst.css'
@@ -15,8 +16,9 @@ import './LabelBeheer.css'
 // - enkelvoud: 'ruimte' | 'categorie' (voor de teksten)
 // - verplaatsenVerplicht: bij verwijderen moeten apparaten ergens heen (ruimte),
 //   anders mogen ze ook "zonder" (categorie)
+// - metIcoon: per naam een icoon kunnen kiezen (categorieën: de tegel bij apparaten)
 // - toon: melding onderin tonen (de pagina heeft er één voor alle lijsten)
-function LabelBeheer({ soort, enkelvoud, verplaatsenVerplicht, toon }) {
+function LabelBeheer({ soort, enkelvoud, verplaatsenVerplicht, metIcoon = false, toon }) {
   const { ververs } = useContext(AppContext)
   const { data: labels, laden, fout, herlaad } = useApi(() => getLabels(soort))
   const [bewerkId, setBewerkId] = useState(null)
@@ -51,9 +53,18 @@ function LabelBeheer({ soort, enkelvoud, verplaatsenVerplicht, toon }) {
     naam = naam.trim()
     if (!naam || naam === label.name) return
     try {
-      const resultaat = await renameLabel(soort, label._id, naam)
+      const resultaat = await updateLabel(soort, label._id, { name: naam })
       // Ander _id terug = de naam bestond al, dus samengevoegd
       klaar(resultaat._id !== label._id ? `${label.name} samengevoegd met ${resultaat.name}` : null)
+    } catch (err) {
+      toon({ tekst: err.message, fout: true })
+    }
+  }
+
+  async function kiesIcoon(label, icoon) {
+    try {
+      await updateLabel(soort, label._id, { icon: icoon })
+      klaar()
     } catch (err) {
       toon({ tekst: err.message, fout: true })
     }
@@ -77,6 +88,7 @@ function LabelBeheer({ soort, enkelvoud, verplaatsenVerplicht, toon }) {
           <div key={label._id} className="rij-wrap" style={{ '--i': Math.min(i, 12) }}>
             <div className="rij-clip">
               <div className="rij label-rij">
+                {metIcoon && <IcoonKiezer icoon={label.icon} naam={label.name} onKies={(i) => kiesIcoon(label, i)} />}
                 {bewerkId === label._id ? (
                   <NaamInvoer
                     begin={label.name}

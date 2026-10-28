@@ -2,12 +2,13 @@ import { Link, useLocation } from 'react-router'
 import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import './Kop.css'
 
-// Paginakop: titel, optioneel een regel eronder en knoppen rechts.
+// Paginakop: titel, optioneel een regel eronder, iets ervoor (voor: bijv. de apparaattegel) en knoppen rechts.
 // Op mobiel staat hier ook het tandwiel naar Instellingen (de zijbalk is daar weg).
-function Kop({ titel, onder, children }) {
+function Kop({ titel, onder, voor, children }) {
   const { pathname } = useLocation()
   return (
     <header className="kop">
+      {voor}
       <div className="kop__tekst">
         <h1 className="kop__titel">{titel}</h1>
         {onder && <div className="kop__onder">{onder}</div>}

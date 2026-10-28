@@ -12,7 +12,10 @@ Uitkomst van het ontwerp-interview (2026-10-28). Functies en flows komen uit
 |---|---|
 | Thema | **Donker** is het hoofdontwerp, er is een lichte variant. Schakelaar: Systeem → Licht → Donker (standaard Systeem). |
 | Accent | **Indigo/violet**, alleen voor primaire acties, focus en actieve navigatie. |
-| Statuskleuren | Rood = te laat. Amber = deze week / onvolledig. Verder neutraal grijs. |
+| Statustaal | Elke status heeft vaste kleur + icoon (`ui/status.js`): Te laat = rood + uitroepteken, Deze week = amber + klok, Deze maand/Later = neutraal + kalender. Te laat krijgt ook een rode streep en tint over de rij. |
+| Groepskop | Getint in eigen kleur met een streep links van 3px: neutrale groepen (ruimtes, deze maand) in het accent, statusgroepen in hun statuskleur. |
+| Info | Blauw (`--kl-info`) + puzzelstukje = "er ontbreekt iets" (onvolledig). Amber is alleen voor tijd. |
+| Apparaattegel | Vierkantje vooraan elk apparaat met het icoon van de categorie (te kiezen in Instellingen), anders de eerste letter. Taak = rondje, apparaat = tegel. |
 | Vorm | Afronding 6px, randen 1px, geen schaduw behalve bij panelen/menu's/toast. Spacing in stappen van 4px. |
 | Typografie | **Inter** (lokaal via npm), cijfers in gelijke breedte (`tabular-nums`). |
 | Iconen | **Heroicons** (outline 24 voor navigatie, mini 20 in rijen). |

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from database import assets_col, rooms_col, categories_col, NAAM_COLLATIE
-from models import Label, LabelWrite
+from models import Label, LabelUpdate, LabelWrite
 from helpers import parse_object_id, find_or_404
 
 # Ruimtes en categorieën werken precies hetzelfde: een lijst met namen,
@@ -52,9 +52,18 @@ def maak_router(pad, col, veld, tag, verplaatsen_verplicht, enkelvoud):
         return doc
 
     @router.patch(f"/{pad}/{{label_id}}", response_model=Label)
-    def hernoemen(label_id: str, wijziging: LabelWrite):
+    def wijzigen(label_id: str, wijziging: LabelUpdate):
         oid = parse_object_id(label_id, "id")
         huidig = find_or_404(col, {"_id": oid}, f"{enkelvoud} niet gevonden")
+        velden = wijziging.model_dump(exclude_unset=True)
+        if not velden:
+            raise HTTPException(status_code=422, detail="Geen velden om te wijzigen")
+
+        if "icon" in velden:
+            col.update_one({"_id": oid}, {"$set": {"icon": velden["icon"]}})
+        if "name" not in velden:
+            return met_aantallen(col.find_one({"_id": oid}))
+
         # Bestaat de nieuwe naam al (een ander label)? Dan samenvoegen: dit label vervalt
         # en de apparaten krijgen de schrijfwijze van het bestaande label.
         bestaand = col.find_one({"name": wijziging.name, "_id": {"$ne": oid}}, collation=NAAM_COLLATIE)

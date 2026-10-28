@@ -56,6 +56,7 @@ LABEL_SCHEMA = {
         "properties": {
             "name": {"bsonType": "string", "minLength": 1},
             "order": {"bsonType": ["int", "long"]},
+            "icon": {"bsonType": ["string", "null"]},
         },
     }
 }

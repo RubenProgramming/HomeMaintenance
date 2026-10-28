@@ -7,7 +7,8 @@
   border-top: var(--rand);
 }
 .instelling:first-of-type { border-top: none; padding-top: 0; }
-.instelling__uitleg h2 { font-size: var(--tekst-md); font-weight: var(--gewicht-vet); }
+.instelling__uitleg h2 { display: flex; align-items: center; gap: var(--r-2); font-size: var(--tekst-md); font-weight: var(--gewicht-vet); }
+.instelling__uitleg h2 svg { width: 16px; height: 16px; color: var(--kl-tekst-zwak); }
 .instelling__uitleg p { margin-top: var(--r-1); color: var(--kl-tekst-gedempt); font-size: var(--tekst-sm); }
 
 /* Gesegmenteerde keuze (thema) */

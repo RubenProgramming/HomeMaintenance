@@ -38,7 +38,8 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat 
     if (!gelukt) setFase('rust')
   }
 
-  const meta = [apparaat?.name, apparaat?.location, taak.every && interval(taak.every, taak.unit)].filter(Boolean)
+  // Apparaat iets sterker dan de rest: "welk ding" is belangrijker dan "waar" en "hoe vaak"
+  const meta = [apparaat?.location, taak.every && interval(taak.every, taak.unit)].filter(Boolean)
 
   return (
     <div
@@ -46,7 +47,7 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat 
       style={{ '--i': Math.min(index, 12) }}
     >
       <div className="rij-clip">
-        <div className="rij taakrij">
+        <div className={`rij taakrij taakrij--${niveau}`}>
           <button
             type="button"
             disabled={uit}
@@ -68,7 +69,13 @@ function TaakRij({ taak, apparaat, onAfvinken, onDetails, index = 0, opApparaat 
                 {taak.title}
               </Link>
             )}
-            {meta.length > 0 && <span className="rij__meta">{meta.join(' · ')}</span>}
+            {(apparaat || meta.length > 0) && (
+              <span className="rij__meta">
+                {apparaat && <span className="rij__meta-sterk">{apparaat.name}</span>}
+                {apparaat && meta.length > 0 && ' · '}
+                {meta.join(' · ')}
+              </span>
+            )}
           </div>
 
           <span className={`rij__datum cijfers rij__datum--${niveau}`} title={formatDatum(taak.nextDue)}>

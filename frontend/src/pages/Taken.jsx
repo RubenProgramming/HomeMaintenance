@@ -5,19 +5,16 @@ import { useAfvinken } from '../hooks/useAfvinken'
 import { urgentie } from '../utils/datum'
 import { AppContext } from '../ui/appContext'
 import Kop from '../ui/Kop'
+import GroepKop from '../ui/GroepKop'
+import StatusChips from '../ui/StatusChips'
+import { STATUS } from '../ui/status'
 import TaakRij from '../ui/TaakRij'
 import AfrondenSheet from '../ui/AfrondenSheet'
 import Melding from '../ui/Melding'
 import { LijstFout, LijstLaden } from '../ui/LijstStatus'
 import '../ui/Lijst.css'
 
-const GROEPEN = [
-  { sleutel: 'telaat', titel: 'Te laat', stip: 'rood' },
-  { sleutel: 'week', titel: 'Deze week', stip: 'amber' },
-  { sleutel: 'maand', titel: 'Deze maand', stip: '' },
-  { sleutel: 'later', titel: 'Later', stip: '' },
-  { sleutel: 'onbekend', titel: 'Zonder datum', stip: '' },
-]
+const GROEPEN = Object.entries(STATUS).map(([sleutel, s]) => ({ sleutel, ...s }))
 
 // Alle onderhoudstaken, ook die van ver weg. Het Overzicht toont alleen wat binnen een maand moet.
 // Nieuwe taken voeg je toe op de pagina van een apparaat.
@@ -48,10 +45,16 @@ function Taken() {
   const apparaatPerId = Object.fromEntries(apparaten.map((a) => [a._id, a]))
   const gesorteerd = [...taken].sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue))
   let volgnummer = 0
+  const perGroep = GROEPEN.map((g) => ({ ...g, taken: gesorteerd.filter((t) => urgentie(t.nextDue) === g.sleutel) }))
+  // Chips alleen voor wat aandacht vraagt; "later" en "zonder datum" zie je in de lijst
+  const chips = perGroep
+    .filter((g) => g.toon && g.taken.length > 0)
+    .map((g) => ({ ...g, aantal: g.taken.length }))
 
   return (
     <>
       {kop}
+      {chips.length > 0 && <StatusChips items={chips} />}
       {taken.length === 0 ? (
         <div className="lijst lijst-leeg">
           <strong>Nog geen onderhoudstaken</strong>
@@ -59,17 +62,12 @@ function Taken() {
         </div>
       ) : (
         <div className="lijst">
-          {GROEPEN.map((g) => {
-            const inGroep = gesorteerd.filter((t) => urgentie(t.nextDue) === g.sleutel)
-            if (inGroep.length === 0) return null
+          {perGroep.map((g) => {
+            if (g.taken.length === 0) return null
             return (
               <section key={g.sleutel} className="groep" aria-label={g.titel}>
-                <h2 className="groep__kop">
-                  <span className={`stip ${g.stip ? `stip--${g.stip}` : ''}`} aria-hidden />
-                  {g.titel}
-                  <span className="groep__aantal cijfers">{inGroep.length}</span>
-                </h2>
-                {inGroep.map((taak) => (
+                <GroepKop id={`groep-${g.sleutel}`} icoon={g.icoon} titel={g.titel} toon={g.toon} aantal={g.taken.length} />
+                {g.taken.map((taak) => (
                   <TaakRij
                     key={`${taak._id}-${taak.nextDue}`}
                     taak={taak}

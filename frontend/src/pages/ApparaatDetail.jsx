@@ -1,12 +1,25 @@
 import { useContext, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArchiveBoxIcon, ArrowUturnLeftIcon, ChevronLeftIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/20/solid'
-import { archiveAsset, getAsset, getLogs, getTasks, restoreAsset } from '../api'
+import {
+  ArchiveBoxIcon,
+  ArrowUturnLeftIcon,
+  ChevronLeftIcon,
+  ClockIcon,
+  InformationCircleIcon,
+  PencilSquareIcon,
+  PhotoIcon,
+  PlusIcon,
+  PuzzlePieceIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/react/20/solid'
+import { archiveAsset, getAsset, getLabels, getLogs, getTasks, restoreAsset } from '../api'
 import { useApi } from '../hooks/useApi'
 import { useAfvinken } from '../hooks/useAfvinken'
 import { formatDatum } from '../utils/datum'
 import { AppContext } from '../ui/appContext'
 import Kop from '../ui/Kop'
+import ApparaatTegel from '../ui/ApparaatTegel'
+import { iconenPerCategorie } from '../ui/categorieIconen'
 import Popmenu from '../ui/Popmenu'
 import TaakRij from '../ui/TaakRij'
 import Melding from '../ui/Melding'
@@ -27,11 +40,14 @@ function ApparaatDetail() {
   // dus we halen alle taken op en filteren.
   const { data, laden, fout, herlaad } = useApi(
     () =>
-      Promise.all([getAsset(id), getTasks(), getLogs(id)]).then(([apparaat, taken, logs]) => ({
-        apparaat,
-        taken: taken.filter((t) => t.assetId === id),
-        logs,
-      })),
+      Promise.all([getAsset(id), getTasks(), getLogs(id), getLabels('categories')]).then(
+        ([apparaat, taken, logs, categorieen]) => ({
+          apparaat,
+          taken: taken.filter((t) => t.assetId === id),
+          logs,
+          categorieen,
+        }),
+      ),
     `${id}-${versie}`,
   )
   const { afvinken, ...melding } = useAfvinken(herlaad)
@@ -48,7 +64,8 @@ function ApparaatDetail() {
   if (laden && !data) return <>{terug}<Kop titel=" " /><LijstLaden rijen={3} /></>
   if (fout) return <>{terug}<Kop titel="Apparaat" /><LijstFout melding={fout} opnieuw={herlaad} /></>
 
-  const { apparaat, taken, logs } = data
+  const { apparaat, taken, logs, categorieen } = data
+  const icoon = iconenPerCategorie(categorieen)[apparaat.category?.toLowerCase()]
   const gearchiveerd = apparaat.archivedAt !== null
   const takenPerId = Object.fromEntries(taken.map((t) => [t._id, t]))
   const gesorteerd = [...taken].sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue))
@@ -68,6 +85,7 @@ function ApparaatDetail() {
     <>
       {terug}
       <Kop
+        voor={<ApparaatTegel groot icoon={icoon} categorie={apparaat.category} naam={apparaat.name} />}
         titel={apparaat.name}
         onder={[apparaat.location, apparaat.category].filter(Boolean).join(' · ')}
       >
@@ -100,7 +118,7 @@ function ApparaatDetail() {
         <div className="apparaat__hoofd">
           <section className="sectie" aria-labelledby="kop-taken">
             <div className="sectie__kop">
-              <h2 id="kop-taken">Onderhoud</h2>
+              <h2 id="kop-taken"><WrenchScrewdriverIcon aria-hidden />Onderhoud</h2>
               {!gearchiveerd && (
                 <button type="button" className="btn btn--stil" onClick={() => setOpen('taak')}>
                   <PlusIcon aria-hidden />
@@ -115,7 +133,11 @@ function ApparaatDetail() {
                 ) : (
                   <>
                     <strong>
-                      <span className="tag tag--amber">Onvolledig</span> Nog geen onderhoudstaak
+                      <span className="tag tag--info">
+                        <PuzzlePieceIcon aria-hidden />
+                        Onvolledig
+                      </span>{' '}
+                      Nog geen onderhoudstaak
                     </strong>
                     Zonder taak krijg je voor dit apparaat nooit een seintje.
                     <div>
@@ -146,7 +168,7 @@ function ApparaatDetail() {
 
           <section className="sectie" aria-labelledby="kop-logboek">
             <div className="sectie__kop">
-              <h2 id="kop-logboek">Logboek</h2>
+              <h2 id="kop-logboek"><ClockIcon aria-hidden />Logboek</h2>
             </div>
             {logs.length === 0 ? (
               <p className="sectie__leeg">Nog niets uitgevoerd.</p>
@@ -173,7 +195,7 @@ function ApparaatDetail() {
         <aside className="apparaat__zij">
           <section className="sectie" aria-labelledby="kop-gegevens">
             <div className="sectie__kop">
-              <h2 id="kop-gegevens">Gegevens</h2>
+              <h2 id="kop-gegevens"><InformationCircleIcon aria-hidden />Gegevens</h2>
             </div>
             <dl className="gegevens">
               <Gegeven label="Merk" waarde={apparaat.brand} />
@@ -187,7 +209,7 @@ function ApparaatDetail() {
 
           <section className="sectie" aria-labelledby="kop-bestanden">
             <div className="sectie__kop">
-              <h2 id="kop-bestanden">Foto's en documenten</h2>
+              <h2 id="kop-bestanden"><PhotoIcon aria-hidden />Bestanden</h2>
               <span className="binnenkort">Binnenkort</span>
             </div>
             <p className="sectie__leeg">Typeplaatje, handleiding en garantiebewijs bij elkaar.</p>

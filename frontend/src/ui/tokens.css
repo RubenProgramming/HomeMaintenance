@@ -20,7 +20,7 @@
 
   --kl-tekst: #ebecef;
   --kl-tekst-gedempt: #9b9ca5;
-  --kl-tekst-zwak: #696a73;
+  --kl-tekst-zwak: #7f808a;    /* ±4,6:1 op de achtergrond: nog leesbaar als kleine tekst */
 
   --kl-accent: #7c7bff;
   --kl-accent-hover: #908fff;
@@ -32,6 +32,9 @@
   --kl-amber: #e9a83b;
   --kl-amber-zacht: rgb(233 168 59 / 0.12);
   --kl-groen: #4fb985;
+  /* Info: "er ontbreekt iets" (onvolledig). Bewust geen amber: amber = tijd (deze week) */
+  --kl-info: #5ea8e8;
+  --kl-info-zacht: rgb(94 168 232 / 0.12);
 
   --schaduw-paneel: 0 0 0 1px var(--kl-rand), 0 16px 48px rgb(0 0 0 / 0.5);
   --schaduw-pop: 0 0 0 1px var(--kl-rand-sterk), 0 8px 24px rgb(0 0 0 / 0.45);
@@ -93,7 +96,7 @@
   --kl-rand-sterk: #d6d6dd;
   --kl-tekst: #16171b;
   --kl-tekst-gedempt: #5d5e67;
-  --kl-tekst-zwak: #8d8e97;
+  --kl-tekst-zwak: #6e6f78;
   --kl-accent: #5b59e8;
   --kl-accent-hover: #4b49d6;
   --kl-accent-zacht: rgb(91 89 232 / 0.1);
@@ -102,6 +105,8 @@
   --kl-amber: #b4720b;
   --kl-amber-zacht: rgb(180 114 11 / 0.1);
   --kl-groen: #2c8a5c;
+  --kl-info: #1f6db0;
+  --kl-info-zacht: rgb(31 109 176 / 0.09);
   --schaduw-paneel: 0 0 0 1px var(--kl-rand), 0 16px 48px rgb(15 15 20 / 0.12);
   --schaduw-pop: 0 0 0 1px var(--kl-rand), 0 8px 24px rgb(15 15 20 / 0.1);
   color-scheme: light;
@@ -118,7 +123,7 @@
     --kl-rand-sterk: #d6d6dd;
     --kl-tekst: #16171b;
     --kl-tekst-gedempt: #5d5e67;
-    --kl-tekst-zwak: #8d8e97;
+    --kl-tekst-zwak: #6e6f78;
     --kl-accent: #5b59e8;
     --kl-accent-hover: #4b49d6;
     --kl-accent-zacht: rgb(91 89 232 / 0.1);
@@ -127,6 +132,8 @@
     --kl-amber: #b4720b;
     --kl-amber-zacht: rgb(180 114 11 / 0.1);
     --kl-groen: #2c8a5c;
+    --kl-info: #1f6db0;
+    --kl-info-zacht: rgb(31 109 176 / 0.09);
     --schaduw-paneel: 0 0 0 1px var(--kl-rand), 0 16px 48px rgb(15 15 20 / 0.12);
     --schaduw-pop: 0 0 0 1px var(--kl-rand), 0 8px 24px rgb(15 15 20 / 0.1);
     color-scheme: light;

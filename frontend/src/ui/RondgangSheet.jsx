@@ -165,7 +165,7 @@ function InRuimte({ ruimte, apparaten, metTaak, onToegevoegd, onWissel }) {
                   {metTaak.has(a._id) ? (
                     <span className="rij__datum">Heeft taken</span>
                   ) : (
-                    <span className="tag tag--amber">Onvolledig</span>
+                    <span className="tag tag--info">Onvolledig</span>
                   )}
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { ComputerDesktopIcon, MoonIcon, SunIcon } from '@heroicons/react/20/solid'
+import { ComputerDesktopIcon, MapPinIcon, MoonIcon, SunIcon, SwatchIcon, TagIcon } from '@heroicons/react/20/solid'
 import { useMelding } from '../hooks/useMelding'
 import { ThemaContext } from '../ui/themaContext'
 import Kop from '../ui/Kop'
@@ -25,7 +25,7 @@ function Instellingen() {
 
       <section className="instelling" aria-labelledby="kop-weergave">
         <div className="instelling__uitleg">
-          <h2 id="kop-weergave">Weergave</h2>
+          <h2 id="kop-weergave"><SwatchIcon aria-hidden />Weergave</h2>
           <p>Systeem volgt de instelling van je apparaat.</p>
         </div>
         <div className="segment" role="radiogroup" aria-labelledby="kop-weergave">
@@ -47,7 +47,7 @@ function Instellingen() {
 
       <section className="instelling" aria-labelledby="kop-ruimtes">
         <div className="instelling__uitleg">
-          <h2 id="kop-ruimtes">Ruimtes</h2>
+          <h2 id="kop-ruimtes"><MapPinIcon aria-hidden />Ruimtes</h2>
           <p>Tik op een naam om hem te hernoemen. Dezelfde naam als een andere ruimte voegt ze samen.</p>
         </div>
         <LabelBeheer soort="rooms" enkelvoud="ruimte" verplaatsenVerplicht toon={toon} />
@@ -55,10 +55,10 @@ function Instellingen() {
 
       <section className="instelling" aria-labelledby="kop-categorieen">
         <div className="instelling__uitleg">
-          <h2 id="kop-categorieen">Categorieën</h2>
-          <p>Optioneel per apparaat, handig om te groeperen en te zoeken.</p>
+          <h2 id="kop-categorieen"><TagIcon aria-hidden />Categorieën</h2>
+          <p>Optioneel per apparaat. Het icoon zie je terug bij elk apparaat in die categorie.</p>
         </div>
-        <LabelBeheer soort="categories" enkelvoud="categorie" verplaatsenVerplicht={false} toon={toon} />
+        <LabelBeheer soort="categories" enkelvoud="categorie" verplaatsenVerplicht={false} metIcoon toon={toon} />
       </section>
 
       <Melding melding={melding} sluit={sluit} />

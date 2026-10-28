@@ -78,9 +78,10 @@ export const getLabels = (soort) => verzoek(`/${soort}`)
 export const createLabel = (soort, naam) =>
   verzoek(`/${soort}`, { methode: 'POST', body: { name: naam } })
 
-// Hernoemen past ook de apparaten aan; een bestaande naam = samenvoegen
-export const renameLabel = (soort, id, naam) =>
-  verzoek(`/${soort}/${id}`, { methode: 'PATCH', body: { name: naam } })
+// wijziging: { name } en/of { icon }. Hernoemen past ook de apparaten aan;
+// een bestaande naam = samenvoegen
+export const updateLabel = (soort, id, wijziging) =>
+  verzoek(`/${soort}/${id}`, { methode: 'PATCH', body: wijziging })
 
 // naarId: waar de apparaten heen gaan (bij categorieën mag het leeg: dan geen categorie)
 export const deleteLabel = (soort, id, naarId = null) =>

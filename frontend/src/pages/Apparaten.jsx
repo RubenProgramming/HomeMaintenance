@@ -1,12 +1,15 @@
 import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { MagnifyingGlassIcon, MapPinIcon, PlusIcon, PuzzlePieceIcon } from '@heroicons/react/20/solid'
 import { getAssets, getLabels, getTasks } from '../api'
 import { useApi } from '../hooks/useApi'
 import { datumLabel, urgentie } from '../utils/datum'
 import { ruimteNamen, zelfdeRuimte } from '../utils/ruimtes'
 import { AppContext } from '../ui/appContext'
 import Kop from '../ui/Kop'
+import GroepKop from '../ui/GroepKop'
+import ApparaatTegel from '../ui/ApparaatTegel'
+import { iconenPerCategorie } from '../ui/categorieIconen'
 import ApparaatSheet from '../ui/ApparaatSheet'
 import { LijstFout, LijstLaden } from '../ui/LijstStatus'
 import '../ui/Formulier.css'
@@ -26,11 +29,9 @@ function Apparaten({ nieuw = false }) {
   // archief en versie zijn de "sleutel": verandert er een, dan wordt opnieuw geladen
   const { data, laden, fout, herlaad } = useApi(
     () =>
-      Promise.all([getAssets(archief), getTasks(), getLabels('rooms')]).then(([apparaten, taken, ruimtes]) => ({
-        apparaten,
-        taken,
-        ruimtes,
-      })),
+      Promise.all([getAssets(archief), getTasks(), getLabels('rooms'), getLabels('categories')]).then(
+        ([apparaten, taken, ruimtes, categorieen]) => ({ apparaten, taken, ruimtes, categorieen }),
+      ),
     `${archief}-${versie}`,
   )
 
@@ -56,7 +57,8 @@ function Apparaten({ nieuw = false }) {
   if (laden && !data) return <>{kop}<LijstLaden />{sheet}</>
   if (fout) return <>{kop}<LijstFout melding={fout} opnieuw={herlaad} /></>
 
-  const { apparaten, taken, ruimtes } = data
+  const { apparaten, taken, ruimtes, categorieen } = data
+  const icoonVan = iconenPerCategorie(categorieen)
 
   // Per apparaat de eerstvolgende taak (taken zijn een aparte collectie, gekoppeld via assetId)
   const volgende = {}
@@ -117,10 +119,7 @@ function Apparaten({ nieuw = false }) {
         <div className="lijst">
           {groepen.map(({ ruimte, items }) => (
             <section key={ruimte} className="groep" aria-label={ruimte}>
-              <h2 className="groep__kop">
-                {ruimte}
-                <span className="groep__aantal cijfers">{items.length}</span>
-              </h2>
+              <GroepKop icoon={MapPinIcon} titel={ruimte} aantal={items.length} />
               {items.map((a) => {
                 const taak = volgende[a._id]
                 const meta = [[a.brand, a.model].filter(Boolean).join(' '), a.category].filter(Boolean)
@@ -128,6 +127,7 @@ function Apparaten({ nieuw = false }) {
                   <div key={a._id} className="rij-wrap" style={{ '--i': Math.min(volgnummer++, 12) }}>
                     <div className="rij-clip">
                       <div className={`rij ${a.archivedAt ? 'rij--uit' : ''}`}>
+                        <ApparaatTegel icoon={icoonVan[a.category?.toLowerCase()]} categorie={a.category} naam={a.name} />
                         <div className="rij__hoofd">
                           <Link to={`/apparaten/${a._id}`} className="rij__titel rij__link">{a.name}</Link>
                           {meta.length > 0 && <span className="rij__meta">{meta.join(' · ')}</span>}
@@ -142,7 +142,10 @@ function Apparaten({ nieuw = false }) {
                             </span>
                           </span>
                         ) : (
-                          <span className="tag tag--amber">Onvolledig</span>
+                          <span className="tag tag--info">
+                            <PuzzlePieceIcon aria-hidden />
+                            Onvolledig
+                          </span>
                         )}
                       </div>
                     </div>

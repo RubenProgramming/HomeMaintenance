@@ -1,0 +1,22 @@
+.tegel {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: var(--rand);
+  border-radius: var(--hoek);
+  background: var(--kl-vlak);
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-vet);
+}
+.tegel svg { width: 16px; height: 16px; }
+
+.tegel--groot { width: 44px; height: 44px; font-size: var(--tekst-lg); }
+.tegel--groot svg { width: 24px; height: 24px; }
+
+@media (max-width: 767px) {
+  .tegel { width: 32px; height: 32px; }
+  .tegel svg { width: 18px; height: 18px; }
+}
