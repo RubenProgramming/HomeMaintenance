@@ -1,0 +1,57 @@
+/* Formuliervelden: label boven het veld, foutmelding eronder */
+.velden { display: flex; flex-direction: column; gap: var(--r-4); }
+.velden__rij { display: grid; grid-template-columns: 1fr 1fr; gap: var(--r-3); }
+
+.veld { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.veld__label {
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+  font-weight: var(--gewicht-medium);
+}
+.veld__label small { color: var(--kl-tekst-zwak); font-weight: var(--gewicht-normaal); }
+
+.invoer {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--r-3);
+  border: var(--rand);
+  border-color: var(--kl-rand-sterk);
+  border-radius: var(--hoek);
+  background: var(--kl-vlak);
+  color: var(--kl-tekst);
+  font: inherit;
+  font-size: var(--tekst-md);
+  transition: border-color var(--duur-snel), box-shadow var(--duur-snel);
+}
+textarea.invoer { height: auto; min-height: 88px; padding: var(--r-2) var(--r-3); resize: vertical; }
+.invoer::placeholder { color: var(--kl-tekst-zwak); }
+.invoer:hover { border-color: var(--kl-tekst-zwak); }
+.invoer:focus { outline: none; border-color: var(--kl-accent); box-shadow: 0 0 0 3px var(--kl-accent-zacht); }
+
+/* Veld met eenheid ervoor, bijv. € */
+.invoer-groep { position: relative; }
+.invoer-groep__voor {
+  position: absolute;
+  left: var(--r-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--kl-tekst-zwak);
+  pointer-events: none;
+}
+.invoer-groep .invoer { padding-left: 28px; }
+
+.afronden__taak { margin: 0; font-size: var(--tekst-lg); font-weight: var(--gewicht-vet); }
+
+.formfout {
+  margin: 0;
+  padding: var(--r-2) var(--r-3);
+  border-radius: var(--hoek);
+  background: var(--kl-rood-zacht);
+  color: var(--kl-rood);
+  font-size: var(--tekst-sm);
+}
+
+@media (max-width: 767px) {
+  .invoer { height: 44px; font-size: 16px; } /* 16px: iOS zoomt dan niet in */
+  .velden__rij { grid-template-columns: 1fr; }
+}

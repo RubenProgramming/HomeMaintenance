@@ -1,0 +1,27 @@
+.kop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--r-4);
+  margin-bottom: var(--r-6);
+}
+.kop__titel {
+  margin: 0;
+  font-size: var(--tekst-xl);
+  font-weight: var(--gewicht-vet);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.kop__onder {
+  margin-top: 2px;
+  color: var(--kl-tekst-gedempt);
+  font-size: var(--tekst-sm);
+}
+.kop__acties { display: flex; align-items: center; gap: var(--r-2); flex: none; }
+.kop__thema { display: none; }
+
+@media (max-width: 767px) {
+  .kop { margin-bottom: var(--r-5); }
+  .kop__titel { font-size: var(--tekst-2xl); }
+  .kop__thema { display: inline-flex; }
+}

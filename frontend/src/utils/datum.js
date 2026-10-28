@@ -73,3 +73,20 @@ export function interval(every, unit) {
   if (every !== 1) return `elke ${every} ${meervoud}`
   return unit === 'years' ? 'elk jaar' : `elke ${enkel}` // "het jaar" -> "elk"
 }
+
+const WEEKDAG = new Intl.DateTimeFormat('nl-NL', { weekday: 'long' })
+const KORT = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' })
+const KORT_JAAR = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
+
+// Zo kort mogelijk, maar zonder rekenwerk voor de lezer:
+// "3 dagen te laat", "Vandaag", "Morgen", "vrijdag", "25 dec", "3 feb 2027"
+export function datumLabel(iso) {
+  const dagen = dagenTot(iso)
+  if (dagen === null) return 'Geen datum'
+  if (dagen < 0) return `${-dagen} ${dagen === -1 ? 'dag' : 'dagen'} te laat`
+  if (dagen === 0) return 'Vandaag'
+  if (dagen === 1) return 'Morgen'
+  const datum = new Date(iso)
+  if (dagen < 7) return WEEKDAG.format(datum)
+  return (datum.getFullYear() === new Date().getFullYear() ? KORT : KORT_JAAR).format(datum)
+}
