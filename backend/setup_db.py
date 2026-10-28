@@ -1,3 +1,5 @@
+from pymongo.errors import OperationFailure
+
 from database import db, tasks_col, logs_col, assets_col, rooms_col, categories_col, NAAM_COLLATIE
 
 TASKS_SCHEMA = {
@@ -82,12 +84,19 @@ def vul_eenmalig(col, namen):
 
 
 def apply_schema(name: str, schema: dict):
-    if name in db.list_collection_names():
-        db.command("collMod", name, validator=schema,
-                   validationLevel="strict", validationAction="error")
-    else:
-        db.create_collection(name, validator=schema,
-                             validationLevel="strict", validationAction="error")
+    try:
+        if name in db.list_collection_names():
+            db.command("collMod", name, validator=schema,
+                       validationLevel="strict", validationAction="error")
+        else:
+            db.create_collection(name, validator=schema,
+                                 validationLevel="strict", validationAction="error")
+    except OperationFailure as fout:
+        # Bijv. op MongoDB Atlas: een gebruiker met alleen "readWrite" mag geen collMod doen.
+        # Het schema is een extra vangnet (Pydantic controleert de invoer al), dus de app
+        # start gewoon door. Geef de gebruiker de rol dbAdmin op "onderhoud" om het wél te zetten.
+        reden = "geen rechten (rol dbAdmin nodig)" if fout.code == 13 else (fout.details or {}).get("codeName", fout.code)
+        print(f"WAARSCHUWING: schema voor '{name}' niet ingesteld: {reden}", flush=True)
 
 
 def init_db():

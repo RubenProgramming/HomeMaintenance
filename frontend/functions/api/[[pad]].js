@@ -13,8 +13,17 @@
 // [[pad]] in de bestandsnaam = "alles onder /api/", bijv. /api/tasks/123/done.
 
 export async function onRequest({ request, env }) {
+  // Duidelijke melding in plaats van een crash (Cloudflare "error 1101") als er iets niet is ingesteld
+  if (!env.APP_SLEUTEL) return fout('APP_SLEUTEL is niet ingesteld in Cloudflare Pages')
+  let basis
+  try {
+    basis = new URL(env.BACKEND_URL)
+  } catch {
+    return fout('BACKEND_URL ontbreekt of is geen volledig adres (begint het met https://?)')
+  }
+
   const url = new URL(request.url)
-  const doel = new URL(url.pathname.replace(/^\/api/, '') + url.search, env.BACKEND_URL)
+  const doel = new URL(url.pathname.replace(/^\/api/, '') + url.search, basis)
 
   const headers = new Headers(request.headers)
   headers.set('X-App-Sleutel', env.APP_SLEUTEL)
@@ -22,11 +31,20 @@ export async function onRequest({ request, env }) {
   headers.delete('cookie')
   headers.delete('host')
 
-  return fetch(doel, {
-    method: request.method,
-    headers,
-    // Body eerst helemaal inlezen: onze verzoeken zijn kleine JSON-berichtjes
-    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
-    redirect: 'manual',
-  })
+  try {
+    return await fetch(doel, {
+      method: request.method,
+      headers,
+      // Body eerst helemaal inlezen: onze verzoeken zijn kleine JSON-berichtjes
+      body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
+      redirect: 'manual',
+    })
+  } catch {
+    return fout(`Backend niet bereikbaar op ${basis.origin}`, 502)
+  }
+}
+
+// Zelfde vorm als FastAPI-fouten ({ detail }), zodat de app de melding gewoon toont
+function fout(detail, status = 500) {
+  return new Response(JSON.stringify({ detail }), { status, headers: { 'Content-Type': 'application/json' } })
 }
