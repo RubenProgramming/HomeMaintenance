@@ -43,6 +43,8 @@ def complete_task(task_id: str, log: LogCreate):
     doc = log.model_dump()
     doc["taskId"] = task_oid
     doc["assetId"] = task["assetId"]
+    # Oude datum bewaren, zodat DELETE /logs/{id} (ongedaan maken) hem terug kan zetten
+    doc["previousDue"] = task.get("nextDue")
     result = logs_col.insert_one(doc)
     doc["_id"] = result.inserted_id
 

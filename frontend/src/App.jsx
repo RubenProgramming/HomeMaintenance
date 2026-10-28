@@ -5,7 +5,7 @@ import Apparaten from './pages/Apparaten'
 import ApparaatNieuw from './pages/ApparaatNieuw'
 import ApparaatDetail from './pages/ApparaatDetail'
 import Taken from './pages/Taken'
-import Inspecties from './pages/Inspecties'
+import Rondgang from './pages/Rondgang'
 
 // De "routekaart" van de app: welke URL toont welke pagina.
 // Alle routes staan binnen <Layout>, dus de navigatie is overal zichtbaar.
@@ -19,7 +19,7 @@ function App() {
         <Route path="/apparaten/nieuw" element={<ApparaatNieuw />} />
         <Route path="/apparaten/:id" element={<ApparaatDetail />} />
         <Route path="/taken" element={<Taken />} />
-        <Route path="/inspecties" element={<Inspecties />} />
+        <Route path="/rondgang" element={<Rondgang />} />
         <Route path="*" element={<p>Pagina niet gevonden.</p>} />
       </Route>
     </Routes>

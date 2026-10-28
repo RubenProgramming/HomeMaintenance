@@ -31,7 +31,7 @@ function Apparaten() {
     }
   }
 
-  const categorieen = [...new Set(apparaten.map((a) => a.category))].sort()
+  const categorieen = [...new Set(apparaten.map((a) => a.category).filter(Boolean))].sort()
 
   // Filteren gebeurt hier in de browser. Bij duizenden apparaten zou je dit
   // naar de backend verplaatsen (een query met $regex of een text index).
@@ -46,7 +46,10 @@ function Apparaten() {
     <>
       <header className="paginakop">
         <h1>Apparaten</h1>
-        <Link to="/apparaten/nieuw" className="knop primair">+ Apparaat</Link>
+        <div className="knoppenrij">
+          <Link to="/apparaten/nieuw" className="knop alleen-desktop">Uitgebreid formulier</Link>
+          <Link to="/rondgang" className="knop primair alleen-desktop">+ Apparaten toevoegen</Link>
+        </div>
       </header>
 
       <div className="filterbalk">
@@ -81,7 +84,7 @@ function Apparaten() {
                 className={`apparaatkaart ${a.archivedAt ? 'gearchiveerd' : ''}`}
               >
                 <div className="apparaatkaart-kop">
-                  <span className="chip">{a.category}</span>
+                  {a.category && <span className="chip">{a.category}</span>}
                   {a.archivedAt && <span className="chip">gearchiveerd</span>}
                 </div>
                 <h3>{a.name}</h3>
@@ -97,8 +100,13 @@ function Apparaten() {
                       <span className="klein">{taak.title}</span>
                       <span className={`badge ${urgentie(taak.nextDue)}`}>{relatief(taak.nextDue)}</span>
                     </>
-                  ) : (
+                  ) : a.archivedAt ? (
                     <span className="klein gedempt">Geen taken</span>
+                  ) : (
+                    <>
+                      <span className="klein gedempt">Nog geen onderhoudstaak</span>
+                      <span className="badge onvolledig">onvolledig</span>
+                    </>
                   )}
                 </div>
               </Link>

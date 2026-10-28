@@ -66,3 +66,6 @@ export const completeTask = (taakId, log) =>
 // ---------- Logboek (routers/logs.py) ----------
 
 export const getLogs = (assetId) => verzoek(`/assets/${assetId}/logs`)
+
+// Afronden ongedaan maken: verwijdert de logregel en zet nextDue van de taak terug
+export const undoLog = (logId) => verzoek(`/logs/${logId}`, { methode: 'DELETE' })

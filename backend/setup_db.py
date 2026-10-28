@@ -26,7 +26,8 @@ LOGS_SCHEMA = {
             "performedBy": { "bsonType": ["string", "null"] },
             "cost": { "bsonType": ["int", "long", "null"], "minimum": 0 },
             "notes": { "bsonType": ["string", "null"] },
-            "attachments": { "bsonType": "array"}
+            "attachments": { "bsonType": "array"},
+            "previousDue": { "bsonType": ["date", "null"] }
         },
     }
 }
@@ -34,10 +35,10 @@ LOGS_SCHEMA = {
 ASSETS_SCHEMA = {
     "$jsonSchema": {
        "bsonType": "object",
-       "required": ["name", "category", "location"],
+       "required": ["name", "location"],
        "properties": {
          "name": { "bsonType": "string", "minLength": 1 },
-         "category": { "bsonType": "string", "minLength": 1 },
+         "category": { "bsonType": ["string", "null"] },
          "location": { "bsonType": "string", "minLength": 1 },
          "brand": { "bsonType": ["string", "null"]},
          "model": { "bsonType": ["string", "null"]},

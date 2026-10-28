@@ -5,7 +5,8 @@ import { useApi } from '../hooks/useApi'
 import { urgentie } from '../utils/datum'
 import TaskCard from '../components/TaskCard'
 import TaakAfrondenDialoog from '../components/TaakAfrondenDialoog'
-import NogNietKlaar from '../components/NogNietKlaar'
+import Toast from '../components/Toast'
+import { useAfvinken } from '../hooks/useAfvinken'
 import { Fout, Laden, Leeg } from '../components/Status'
 
 function Dashboard() {
@@ -14,6 +15,7 @@ function Dashboard() {
     Promise.all([getAssets(), getTasks()]).then(([apparaten, taken]) => ({ apparaten, taken })),
   )
   const [afronden, setAfronden] = useState(null)
+  const { afvinken, bezigMet, ...toast } = useAfvinken(herlaad)
 
   if (laden && !data) return <Laden />
   if (fout) return <Fout melding={fout} opnieuw={herlaad} />
@@ -30,14 +32,15 @@ function Dashboard() {
   const dezeMaand = gesorteerd.filter((t) => urgentie(t.nextDue) === 'maand')
   const eerstvolgend = [...telaat, ...dezeWeek, ...dezeMaand].slice(0, 8)
 
+  // Apparaten zonder taken: daar word je nooit aan herinnerd, dus die zijn "onvolledig"
+  const metTaak = new Set(taken.map((t) => t.assetId))
+  const onvolledig = apparaten.filter((a) => !metTaak.has(a._id))
+
   return (
     <>
       <header className="paginakop">
         <h1>Overzicht</h1>
-        <div className="knoppenrij">
-          <NogNietKlaar uitleg="inspectierondes bestaan nog niet in de backend">Inspectie starten</NogNietKlaar>
-          <Link to="/apparaten/nieuw" className="knop primair">+ Apparaat</Link>
-        </div>
+        <Link to="/rondgang" className="knop primair alleen-desktop">+ Apparaten toevoegen</Link>
       </header>
 
       <section className="tegels">
@@ -73,12 +76,38 @@ function Dashboard() {
                 key={taak._id}
                 taak={taak}
                 apparaat={apparaatPerId[taak.assetId]}
-                onAfronden={setAfronden}
+                onAfvinken={afvinken}
+                onDetails={setAfronden}
+                bezig={bezigMet === taak._id}
               />
             ))}
           </div>
         )}
       </section>
+
+      {onvolledig.length > 0 && (
+        <section className="kaart">
+          <div className="kaart-kop">
+            <h2>
+              Onvolledig <span className="gedempt">({onvolledig.length})</span>
+            </h2>
+          </div>
+          <p className="klein gedempt">
+            Deze apparaten hebben nog geen onderhoudstaak, dus je krijgt er nooit een seintje voor.
+          </p>
+          <ul className="onvolledig-lijst">
+            {onvolledig.map((a) => (
+              <li key={a._id}>
+                <Link to={`/apparaten/${a._id}`}>
+                  <span>{a.name}</span>
+                  <span className="klein gedempt">{a.location}</span>
+                  <span className="klein actie">+ taak</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {afronden && (
         <TaakAfrondenDialoog
@@ -90,6 +119,7 @@ function Dashboard() {
           }}
         />
       )}
+      <Toast {...toast} />
     </>
   )
 }

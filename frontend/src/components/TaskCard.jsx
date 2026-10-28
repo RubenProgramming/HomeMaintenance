@@ -4,9 +4,11 @@ import { formatDatum, interval, relatief, urgentie } from '../utils/datum'
 // Eén taak als kaartje.
 // - taak: het taak-document uit MongoDB (title, every, unit, nextDue, ...)
 // - apparaat: optioneel; als je het meegeeft, tonen we naam + locatie met een link
-// - onAfronden: functie die wordt aangeroepen als je op "Afgerond" klikt
+// - onAfvinken: één tik = klaar (zie useAfvinken)
+// - onDetails: afronden mét datum/kosten/notitie (opent TaakAfrondenDialoog)
+// - bezig: true terwijl het afvinken wordt opgeslagen
 // - children: extra knoppen, alles wat je tussen <TaskCard>...</TaskCard> zet
-function TaskCard({ taak, apparaat, onAfronden, children }) {
+function TaskCard({ taak, apparaat, onAfvinken, onDetails, bezig = false, children }) {
   const niveau = urgentie(taak.nextDue)
 
   return (
@@ -24,12 +26,22 @@ function TaskCard({ taak, apparaat, onAfronden, children }) {
       </div>
       <div className="taakkaart-acties">
         <span className={`badge ${niveau}`}>{relatief(taak.nextDue)}</span>
-        {onAfronden && (
-          <button className="knop klein" onClick={() => onAfronden(taak)}>
-            ✓ Afgerond
+        {children}
+        {onDetails && (
+          <button className="knop klein" onClick={() => onDetails(taak)} title="Afronden met datum, kosten of notitie">
+            Details…
           </button>
         )}
-        {children}
+        {onAfvinken && (
+          <button
+            className="knop afvinken"
+            onClick={() => onAfvinken(taak)}
+            disabled={bezig}
+            aria-label={`${taak.title} afronden`}
+          >
+            ✓ Klaar
+          </button>
+        )}
       </div>
     </div>
   )

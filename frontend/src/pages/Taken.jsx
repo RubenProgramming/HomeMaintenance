@@ -5,6 +5,8 @@ import { urgentie } from '../utils/datum'
 import TaskCard from '../components/TaskCard'
 import TaakAfrondenDialoog from '../components/TaakAfrondenDialoog'
 import NogNietKlaar from '../components/NogNietKlaar'
+import Toast from '../components/Toast'
+import { useAfvinken } from '../hooks/useAfvinken'
 import { Fout, Laden, Leeg } from '../components/Status'
 
 const GROEPEN = [
@@ -20,6 +22,7 @@ function Taken() {
     Promise.all([getAssets(), getTasks()]).then(([apparaten, taken]) => ({ apparaten, taken })),
   )
   const [afronden, setAfronden] = useState(null)
+  const { afvinken, bezigMet, ...toast } = useAfvinken(herlaad)
 
   if (laden && !data) return <Laden />
   if (fout) return <Fout melding={fout} opnieuw={herlaad} />
@@ -32,7 +35,7 @@ function Taken() {
     <>
       <header className="paginakop">
         <h1>Taken</h1>
-        <div className="knoppenrij">
+        <div className="knoppenrij alleen-desktop">
           <NogNietKlaar uitleg="jaarplanning (MJOP) met kosten per jaar">Jaarplanning</NogNietKlaar>
           <NogNietKlaar uitleg="automatische herinneringen per e-mail/push">Herinneringen</NogNietKlaar>
         </div>
@@ -55,7 +58,9 @@ function Taken() {
                   key={taak._id}
                   taak={taak}
                   apparaat={apparaatPerId[taak.assetId]}
-                  onAfronden={setAfronden}
+                  onAfvinken={afvinken}
+                  onDetails={setAfronden}
+                  bezig={bezigMet === taak._id}
                 />
               ))}
             </div>
@@ -73,6 +78,7 @@ function Taken() {
           }}
         />
       )}
+      <Toast {...toast} />
     </>
   )
 }

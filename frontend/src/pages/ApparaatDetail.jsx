@@ -8,6 +8,8 @@ import SpecsEditor from '../components/SpecsEditor'
 import TaskCard from '../components/TaskCard'
 import TaakAfrondenDialoog from '../components/TaakAfrondenDialoog'
 import NogNietKlaar from '../components/NogNietKlaar'
+import Toast from '../components/Toast'
+import { useAfvinken } from '../hooks/useAfvinken'
 import { Fout, Laden, Leeg } from '../components/Status'
 
 function ApparaatDetail() {
@@ -30,6 +32,7 @@ function ApparaatDetail() {
   const [bewerken, setBewerken] = useState(false)
   const [afronden, setAfronden] = useState(null)
   const [actieFout, setActieFout] = useState(null)
+  const { afvinken, bezigMet, ...toast } = useAfvinken(herlaad)
 
   if (laden && !data) return <Laden />
   if (fout) return <Fout melding={fout} opnieuw={herlaad} />
@@ -64,7 +67,7 @@ function ApparaatDetail() {
           <Link to="/apparaten" className="klein">← Apparaten</Link>
           <h1>{apparaat.name}</h1>
           <div className="chips">
-            <span className="chip">{apparaat.category}</span>
+            {apparaat.category && <span className="chip">{apparaat.category}</span>}
             <span className="chip">{apparaat.location}</span>
             {gearchiveerd && <span className="chip waarschuwing">gearchiveerd op {formatDatum(apparaat.archivedAt)}</span>}
           </div>
@@ -112,18 +115,29 @@ function ApparaatDetail() {
         <div className="kolom">
           <section className="kaart">
             <h2>Onderhoudstaken</h2>
-            {taken.length === 0 ? (
-              <Leeg>Nog geen taken voor dit apparaat.</Leeg>
+            {taken.length === 0 && gearchiveerd ? (
+              <Leeg>Geen taken.</Leeg>
+            ) : taken.length === 0 ? (
+              <p className="hint-onvolledig">
+                <span className="badge onvolledig">onvolledig</span> Voeg een onderhoudstaak toe, anders krijg je
+                voor dit apparaat nooit een seintje.
+              </p>
             ) : (
               <div className="takenlijst">
                 {taken.map((taak) => (
-                  <TaskCard key={taak._id} taak={taak} onAfronden={gearchiveerd ? null : setAfronden}>
+                  <TaskCard
+                    key={taak._id}
+                    taak={taak}
+                    onAfvinken={gearchiveerd ? null : afvinken}
+                    onDetails={gearchiveerd ? null : setAfronden}
+                    bezig={bezigMet === taak._id}
+                  >
                     <NogNietKlaar uitleg="PATCH /tasks/{id} bestaat nog niet" klein>Bewerk</NogNietKlaar>
                   </TaskCard>
                 ))}
               </div>
             )}
-            {!gearchiveerd && <TaakToevoegen assetId={id} onToegevoegd={herlaad} />}
+            {!gearchiveerd && <TaakToevoegen assetId={id} onToegevoegd={herlaad} startOpen={taken.length === 0} />}
           </section>
 
           <section className="kaart">
@@ -162,6 +176,7 @@ function ApparaatDetail() {
           }}
         />
       )}
+      <Toast {...toast} />
     </>
   )
 }
@@ -203,7 +218,7 @@ function ApparaatBewerken({ apparaat, onAnnuleer, onOpgeslagen }) {
   // De state begint als kopie van het apparaat; pas bij Opslaan gaat het naar de backend
   const [form, setForm] = useState({
     name: apparaat.name,
-    category: apparaat.category,
+    category: apparaat.category ?? '',
     location: apparaat.location,
     brand: apparaat.brand ?? '',
     model: apparaat.model ?? '',
@@ -225,7 +240,7 @@ function ApparaatBewerken({ apparaat, onAnnuleer, onOpgeslagen }) {
       // PATCH = gedeeltelijke update. De backend zet alleen de velden die we sturen.
       await updateAsset(apparaat._id, {
         name: form.name.trim(),
-        category: form.category.trim(),
+        category: form.category.trim() || null,
         location: form.location.trim(),
         brand: form.brand.trim() || null,
         model: form.model.trim() || null,
@@ -244,7 +259,7 @@ function ApparaatBewerken({ apparaat, onAnnuleer, onOpgeslagen }) {
       <h2>Gegevens bewerken</h2>
       <div className="velden-raster">
         <label>Naam *<input name="name" value={form.name} onChange={wijzig} required /></label>
-        <label>Categorie *<input name="category" value={form.category} onChange={wijzig} required /></label>
+        <label>Categorie<input name="category" value={form.category} onChange={wijzig} /></label>
         <label>Locatie *<input name="location" value={form.location} onChange={wijzig} required /></label>
         <label>Merk<input name="brand" value={form.brand} onChange={wijzig} /></label>
         <label>Model<input name="model" value={form.model} onChange={wijzig} /></label>
@@ -266,9 +281,12 @@ function ApparaatBewerken({ apparaat, onAnnuleer, onOpgeslagen }) {
   )
 }
 
-function TaakToevoegen({ assetId, onToegevoegd }) {
+// startOpen: formulier meteen open tonen (bij een apparaat zonder taken)
+function TaakToevoegen({ assetId, onToegevoegd, startOpen = false }) {
   const leeg = { title: '', every: 1, unit: 'years', nextDue: vandaagInput() }
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(startOpen)
+  // Alleen focussen na een klik; bij startOpen zou je telefoon anders meteen het toetsenbord openen
+  const [geklikt, setGeklikt] = useState(false)
   const [taak, setTaak] = useState(leeg)
   const [fout, setFout] = useState(null)
 
@@ -296,13 +314,13 @@ function TaakToevoegen({ assetId, onToegevoegd }) {
   }
 
   if (!open) {
-    return <button className="knop klein" onClick={() => setOpen(true)}>+ Taak toevoegen</button>
+    return <button className="knop klein" onClick={() => { setOpen(true); setGeklikt(true) }}>+ Taak toevoegen</button>
   }
 
   return (
     <form className="taak-toevoegen" onSubmit={opslaan}>
       <div className="velden-raster">
-        <label>Taak<input name="title" value={taak.title} onChange={wijzig} required autoFocus placeholder="Filter vervangen" /></label>
+        <label>Taak<input name="title" value={taak.title} onChange={wijzig} required autoFocus={geklikt} placeholder="Filter vervangen" /></label>
         <label>
           Elke
           <div className="interval-invoer">

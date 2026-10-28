@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { createAsset, createTask, getAssets } from '../api'
 import { useApi } from '../hooks/useApi'
 import { vandaagInput, vanInputDatum } from '../utils/datum'
 import { rijenNaarSpecs } from '../utils/specs'
+import { alleRuimtes } from '../utils/ruimtes'
 import SpecsEditor from '../components/SpecsEditor'
 import NogNietKlaar from '../components/NogNietKlaar'
 
@@ -12,7 +13,8 @@ const LEGE_TAAK = { title: '', every: 1, unit: 'years', nextDue: vandaagInput() 
 
 function ApparaatNieuw() {
   const navigate = useNavigate()
-  const [apparaat, setApparaat] = useState(LEEG_APPARAAT)
+  const [params] = useSearchParams()
+  const [apparaat, setApparaat] = useState({ ...LEEG_APPARAAT, location: params.get('ruimte') ?? '' })
   const [specs, setSpecs] = useState([])
   const [metTaak, setMetTaak] = useState(false)
   const [taak, setTaak] = useState(LEGE_TAAK)
@@ -22,8 +24,8 @@ function ApparaatNieuw() {
 
   // Bestaande apparaten ophalen, alleen om categorieën en locaties voor te stellen
   const { data: bestaande } = useApi(() => getAssets())
-  const categorieen = [...new Set((bestaande ?? []).map((a) => a.category))].sort()
-  const locaties = [...new Set((bestaande ?? []).map((a) => a.location))].sort()
+  const categorieen = [...new Set((bestaande ?? []).map((a) => a.category).filter(Boolean))].sort()
+  const locaties = alleRuimtes(bestaande ?? [])
 
   function wijzigApparaat(e) {
     setApparaat({ ...apparaat, [e.target.name]: e.target.value })
@@ -43,7 +45,7 @@ function ApparaatNieuw() {
       // Stap 1: het apparaat aanmaken. Lege tekstvelden worden null.
       const nieuw = await createAsset({
         name: apparaat.name.trim(),
-        category: apparaat.category.trim(),
+        category: apparaat.category.trim() || null,
         location: apparaat.location.trim(),
         brand: apparaat.brand.trim() || null,
         model: apparaat.model.trim() || null,
@@ -96,15 +98,15 @@ function ApparaatNieuw() {
             <input name="name" value={apparaat.name} onChange={wijzigApparaat} required autoFocus placeholder="CV-ketel" />
           </label>
           <label>
-            Categorie *
+            Categorie
             {/* datalist: vrij typen, maar met suggesties uit bestaande apparaten */}
-            <input name="category" list="categorieen" value={apparaat.category} onChange={wijzigApparaat} required placeholder="Installaties" />
+            <input name="category" list="categorieen" value={apparaat.category} onChange={wijzigApparaat} placeholder="Installaties" />
             <datalist id="categorieen">
               {categorieen.map((c) => <option key={c} value={c} />)}
             </datalist>
           </label>
           <label>
-            Locatie *
+            Ruimte *
             <input name="location" list="locaties" value={apparaat.location} onChange={wijzigApparaat} required placeholder="Keuken" />
             <datalist id="locaties">
               {locaties.map((l) => <option key={l} value={l} />)}

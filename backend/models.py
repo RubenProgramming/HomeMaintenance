@@ -9,7 +9,7 @@ pyObjectId = Annotated[str, BeforeValidator(str)]
 class Asset(BaseModel):
     id: pyObjectId = Field(alias="_id")
     name: str
-    category: str
+    category: str | None = None
     location: str
     brand: str | None = None
     model: str | None = None
@@ -19,9 +19,9 @@ class Asset(BaseModel):
 
 class AssetCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    name: str
-    category: str
-    location: str
+    name: str = Field(min_length=1)
+    category: str | None = None
+    location: str = Field(min_length=1)
     brand: str | None = None
     model: str | None = None
     installedAt: datetime | None = None
@@ -30,7 +30,7 @@ class AssetCreate(BaseModel):
 class AssetUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = None
-    category: str = None
+    category: str | None = None
     location: str = None
     brand: str | None = None
     model: str | None = None
