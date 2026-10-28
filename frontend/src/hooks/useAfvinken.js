@@ -1,4 +1,4 @@
-import { completeTask, undoLog } from '../api'
+import { completeTask, deleteLog } from '../api'
 import { vandaagInput, vanInputDatum } from '../utils/datum'
 import { useMelding } from './useMelding'
 
@@ -21,7 +21,7 @@ export function useAfvinken(herlaad) {
         tekst: `Afgerond: ${taak.title}`,
         // Terugdraaien = logregel weg; de backend zet dan ook nextDue terug
         ongedaan: async () => {
-          await undoLog(log._id)
+          await deleteLog(log._id)
           herlaad()
         },
       })

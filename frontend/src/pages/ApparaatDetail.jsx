@@ -10,6 +10,7 @@ import {
   PhotoIcon,
   PlusIcon,
   PuzzlePieceIcon,
+  TrashIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/20/solid'
 import { archiveAsset, getAsset, getLabels, getLogs, getTasks, restoreAsset } from '../api'
@@ -25,6 +26,7 @@ import TaakRij from '../ui/TaakRij'
 import TaakPanelen from '../ui/TaakPanelen'
 import ApparaatSheet from '../ui/ApparaatSheet'
 import TaakSheet from '../ui/TaakSheet'
+import LogSheet, { LogVerwijderenSheet } from '../ui/LogSheet'
 import { LijstFout, LijstLaden } from '../ui/LijstStatus'
 import '../ui/Lijst.css'
 import './ApparaatDetail.css'
@@ -52,6 +54,9 @@ function ApparaatDetail() {
   const { acties, panelen } = useTaakActies(herlaad) // afvinken, uitstellen, bewerken, … (⋯-menu per taak)
   const [open, setOpen] = useState(null) // 'bewerken' (apparaat) | 'taak' (nieuwe taak)
   const [actieFout, setActieFout] = useState(null)
+  // Logboek: 'nieuw' | { bewerken: log } | { verwijderen: log }. Los van `open` hierboven,
+  // zodat de logboek-sheets en de taak-sheets elkaar niet in de weg zitten.
+  const [logOpen, setLogOpen] = useState(null)
 
   const terug = (
     <Link to="/apparaten" className="terug">
@@ -68,6 +73,8 @@ function ApparaatDetail() {
   const gearchiveerd = apparaat.archivedAt !== null
   const takenPerId = Object.fromEntries(taken.map((t) => [t._id, t]))
   const gesorteerd = [...taken].sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue))
+  // Los onderhoud heeft een eigen titel; een afvinking toont de naam van de taak
+  const logTitel = (log) => log.title ?? takenPerId[log.taskId]?.title ?? 'Onderhoud'
 
   // Archiveren vraagt niet om bevestiging: de pagina blijft staan met een knop "Terugzetten"
   async function actie(functie) {
@@ -167,6 +174,12 @@ function ApparaatDetail() {
           <section className="sectie" aria-labelledby="kop-logboek">
             <div className="sectie__kop">
               <h2 id="kop-logboek"><ClockIcon aria-hidden />Logboek</h2>
+              {!gearchiveerd && (
+                <button type="button" className="btn btn--stil" onClick={() => setLogOpen('nieuw')}>
+                  <PlusIcon aria-hidden />
+                  Vastleggen
+                </button>
+              )}
             </div>
             {logs.length === 0 ? (
               <p className="sectie__leeg">Nog niets uitgevoerd.</p>
@@ -178,10 +191,21 @@ function ApparaatDetail() {
                     <li key={log._id} className="logboek__regel">
                       <span className="logboek__datum cijfers">{formatDatum(log.doneAt)}</span>
                       <div className="logboek__tekst">
-                        <span className="logboek__titel">{takenPerId[log.taskId]?.title ?? 'Onderhoud'}</span>
+                        <span className="logboek__titel">{logTitel(log)}</span>
                         {extra.length > 0 && <span className="logboek__extra cijfers">{extra.join(' · ')}</span>}
                         {log.notes && <p className="logboek__notitie">{log.notes}</p>}
                       </div>
+                      {!gearchiveerd && (
+                        <div className="logboek__acties">
+                          <Popmenu
+                            label={`Acties voor ${logTitel(log)} van ${formatDatum(log.doneAt)}`}
+                            items={[
+                              { label: 'Bewerken', icoon: PencilSquareIcon, onKies: () => setLogOpen({ bewerken: log }) },
+                              { label: 'Verwijderen', icoon: TrashIcon, onKies: () => setLogOpen({ verwijderen: log }) },
+                            ]}
+                          />
+                        </div>
+                      )}
                     </li>
                   )
                 })}
@@ -220,6 +244,25 @@ function ApparaatDetail() {
       )}
       {open === 'taak' && <TaakSheet apparaat={apparaat} onOpgeslagen={herlaad} onSluit={() => setOpen(null)} />}
       <TaakPanelen {...panelen} />
+      {logOpen === 'nieuw' && (
+        <LogSheet apparaatId={id} onOpgeslagen={herlaad} onSluit={() => setLogOpen(null)} />
+      )}
+      {logOpen?.bewerken && (
+        <LogSheet
+          log={logOpen.bewerken}
+          taakTitel={takenPerId[logOpen.bewerken.taskId]?.title}
+          onOpgeslagen={herlaad}
+          onSluit={() => setLogOpen(null)}
+        />
+      )}
+      {logOpen?.verwijderen && (
+        <LogVerwijderenSheet
+          log={logOpen.verwijderen}
+          titel={logTitel(logOpen.verwijderen)}
+          onVerwijderd={herlaad}
+          onSluit={() => setLogOpen(null)}
+        />
+      )}
     </>
   )
 }
